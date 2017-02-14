@@ -12,8 +12,3 @@ end
 frac = 1 - 1/exp(1); % Bootstrap sampling fraction: 1 - 1/e (63.2%)
 [N,D]=size(data_train); 
 idx = randsample(N,ceil(N*frac),1); 
-<<<<<<< HEAD
-%%for test and test git
-=======
-%%for test and test git
->>>>>>> tplocal
