@@ -8,10 +8,20 @@ init;
 %     bag_uni{i} = data_train(group==i,:); 
 % end
 
-% bags with replacement of 63.2% unique data
+% bags with replacement
 frac = 1 - 1/exp(1); % Bootstrap sampling fraction: 1 - 1/e (63.2%)
 [N,D]=size(data_train);
 bag={};
 for i=1:4
-    bag{i} = randsample(N,ceil(N*frac),1); % 4 bags of samples with replacement  
+    bag{i} = data_train(randsample(N,ceil(N*frac),1)); % 4 bags of samples with replacement  
 end
+
+%% grow trees
+% Set the random forest parameters for instance, 
+param.num = 10;         % Number of trees
+param.depth = 5;        % trees depth
+param.splitNum = 3;     % Number of split functions to try
+param.split = 'IG';     % Currently support 'information gain' only
+
+% grow all trees
+trees = growTrees(data_train,param);
