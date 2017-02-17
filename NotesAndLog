@@ -1,0 +1,10 @@
+Q1
+On trying different split function
+- May be better to stick to simple (ie linear) split features for WEAK learners
+  -> meant to be linearly combined to form strong learner
+  -> should be learning simple features
+  -> "it is empirically proved that a weak feature (axis-aligned, two-pixel tests) has already work well"
+      --- Randomised Decision Forests for Classification, slide 15 - on non-linear weak learner
+- Suggestion: linear split functions with form y = ax + b
+  -> two params --- enough complexity
+  -> still easy to implement --- compare value above/below function
