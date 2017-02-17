@@ -13,8 +13,12 @@ frac = 1 - 1/exp(1); % Bootstrap sampling fraction: 1 - 1/e (63.2%)
 [N,D]=size(data_train);
 bag={};
 for i=1:4
-    bag{i} = data_train(randsample(N,ceil(N*frac),1)); % 4 bags of samples with replacement  
+    bag{i} = data_train(randsample(N,ceil(N*frac),1),:); % 4 bags of samples with replacement 
+    figure; plot_toydata(bag{i}) 
 end
+
+
+
 
 %% grow trees
 % Set the random forest parameters for instance, 
