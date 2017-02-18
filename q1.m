@@ -24,7 +24,7 @@ end
 % Set the random forest parameters for instance, 
 param.num = 10;         % Number of trees
 param.depth = 5;        % trees depth
-param.splitNum = 3;     % Number of split functions to try
+param.splitNum = 3;     % Number of split functions to try (what's this exactly mean???
 param.split = 'IG';     % Currently support 'information gain' only
 
 % grow all trees
