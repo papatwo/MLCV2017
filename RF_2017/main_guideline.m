@@ -46,8 +46,9 @@ trees = growTrees(data_train,param);
 % Evaluate/Test Random Forest
 
 % grab the few data points and evaluate them one by one by the leant RF
-test_point = [-.5 -.7; .4 .3; -.7 .4; .5 -.5];
-for n=1:4
+%test_point = [-.5 -.7; .4 .3; -.7 .4; .5 -.5];
+test_point = data_test;
+for n=1:length(test_point)%4 % how to get all 22801 test point prob
     leaves = testTrees([test_point(n,:) 0],trees);
     % average the class distributions of leaf nodes of all trees
     p_rf = trees(1).prob(leaves,:);

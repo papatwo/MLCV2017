@@ -29,14 +29,12 @@ for n = 1:iter
     d_max = single(max(data(:,dim))) - eps;
     t = d_min + rand*((d_max-d_min)); % Pick a random value within the range as threshold
     idx_ = data(:,dim) < t;
-    
-    % 
-    
+
     ig = getIG(data,idx_); % Calculate information gain: the point with max ig which satisfies the threshold
     
     if visualise
         visualise_splitfunc(idx_,data,dim,t,ig,n);
-        pause();
+        pause(0.3);
     end
     
     [node, ig_best, idx_best] = updateIG(node,ig_best,ig,t,idx_,dim,idx_best);
@@ -49,7 +47,7 @@ nodeR.idx = idx(~idx_best);
 if visualise
     visualise_splitfunc(idx_best,data,dim,t,ig_best,0)
     fprintf('Information gain = %f. \n',ig_best);
-    pause();
+    pause(0.3);
 end
 
 end
