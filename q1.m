@@ -30,6 +30,9 @@ param.split = 'IG';     % Currently support 'information gain' only
 
 % grow all trees
 trees = growTrees(data_train,param);
+% prob field in trees struct: only the prob of first tree was calculated.
+% to get all ten trees prob go to growTrees.m to line 47 and 49 to modify
+% index of trees.....
 
 %% Use Karpathy RF library
 opts= struct;
