@@ -51,6 +51,13 @@ timetrain= toc;
 tic;
 yhatTrain = forestTest(m, X);
 timetest= toc;
+bar(hist(Y,unique(Y)));
+bar(hist(YR,unique(YR)));
+bar(hist(YL,unique(YL)));
+%%%change input to subbags data
+
+
+%%
 
 % Look at classifier distribution for fun, to see what classifiers were
 % chosen at split nodes and how often

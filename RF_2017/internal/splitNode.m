@@ -48,7 +48,7 @@ nodeR.idx = idx(~idx_best);
 if visualise
     visualise_splitfunc(idx_best,data,dim,t,ig_best,0)
     fprintf('Information gain = %f. \n',ig_best);
-    pause(0.3);
+    pause();
 end
 
 end
