@@ -78,23 +78,25 @@ timetest= toc;
 load('q1_subbag.mat')
 opts= struct;
 opts.depth= 5;
-opts.numTrees= 1;
+opts.numTrees= 10;
 opts.numSplits= 3;
 opts.verbose= false;
-ID=[1,2,3];
+ID=[1,2,3]; % choose different split function
+leafidx=randperm(15,4); % select 4 leafnodes to visualised their class distribution
 
-for i=1:length(ID)
+for i=1:length(ID) % loop different split funcs
 tic;
-opt.classifierID = ID(i);
-tree{i}= forestTrain(q1_subX, q1_subY, opts);
+opts.classifierID = ID(i);
+tree{i}= forestTrain(q1_subX, q1_subY, opts); % get the tree for current split func
 timetrain= toc;
 tic;
 
-Y = tree{i}.treeModels{1,1}.weakModels{1,1}.Y;
-YR = tree{i}.treeModels{1,1}.weakModels{1,1}.YR;
-YL = tree{i}.treeModels{1,1}.weakModels{1,1}.YL;
+Y = tree{i}.treeModels{1,1}.weakModels{1,1}.Y; % parent node
+YR = tree{i}.treeModels{1,1}.weakModels{1,1}.YR; % right children node
+YL = tree{i}.treeModels{1,1}.weakModels{1,1}.YL; % left children node
+leaf = tree{i}.treeModels{1,1}.leafdist; % leaf nodes (actual counts of each model)
 
-figure(i);
+figure; % class distribution of parent node and children nodes
 subplot(2,2,1); 
 bar(hist(Y,unique(Y)));title ('Parent Node class distribution')
 subplot(2,2,2)
@@ -102,7 +104,83 @@ bar(hist(YR,unique(YR)));title ('Right children Node class distribution')
 subplot(2,2,3)
 bar(hist(YL,unique(YL)));title ('Left children Node class distribution')
 
+figure; % class distribution of slected leaf nodes
+for j=1:length(leafidx)
+    subplot(2,2,j)
+    bar([1 2 3],leaf(leafidx(j),:));
+    fprintf('class ditribution of node %d. \n',leafidx(j))
 end
+
+end
+
+% Test 4 data points given in the script
+test_point = [-0.5 -0.7; 0.4 0.3; -0.7 0.4; 0.5 -0.5];
+
+for k=1:length(tree)
+    [Yhard, Ysoft] = forestTest(tree{k}, test_point, opts);
+    % Yhard are hard assignments to X's, Ysoft is NxK array of
+    % probabilities, where there are K classes.
+    % need to modify Ysoft if want prob as for first half question I changed
+    % the prob to actual counts (in weakTrain)
+    % Look at classifier distribution for fun, to see what classifiers were
+    % chosen at split nodes and how often
+    Yforwl{k}=[Yhard, Ysoft];
+    fprintf('Classifier distributions %d:\n',k);
+    classifierDist= zeros(1, 4);
+    unused= 0;
+    for i=1:length(tree{k}.treeModels)
+        for j=1:length(tree{k}.treeModels{i}.weakModels)
+            cc= tree{k}.treeModels{i}.weakModels{j}.classifierID;
+            if cc>1 %otherwise no classifier was used at that node
+                classifierDist(cc)= classifierDist(cc) + 1;
+            else
+                unused= unused+1;
+            end
+        end
+    end
+    fprintf('%d nodes were empty and had no classifier.\n', unused);
+    for i=1:4
+        fprintf('Classifier with id=%d was used at %d nodes.\n', i, classifierDist(i));
+    end
+    
+    
+    xrange = [-1.5 1.5];
+    yrange = [-1.5 1.5];
+    inc = 0.02;
+    [x, y] = meshgrid(xrange(1):inc:xrange(2), yrange(1):inc:yrange(2));
+    image_size = size(x);
+    xy = [x(:) y(:)];
+    
+    [yhat, ysoft] = forestTest(tree{k}, xy);
+    decmap= reshape(ysoft, [image_size 3]);
+    decmaphard= reshape(yhat, image_size);
+    
+    subplot(121);
+    imagesc(xrange,yrange,decmaphard);
+    hold on;
+    set(gca,'ydir','normal');
+    cmap = [1 0.8 0.8; 0.95 1 0.95; 0.9 0.9 1];
+    colormap(cmap);
+    %%%%%%%%%%%%%%%modify here!=!!!!!!!!!!!!!!!
+    plot(X(Y==1,1), X(Y==1,2), 'o', 'MarkerFaceColor', [.9 .3 .3], 'MarkerEdgeColor','k');
+    plot(X(Y==2,1), X(Y==2,2), 'o', 'MarkerFaceColor', [.3 .9 .3], 'MarkerEdgeColor','k');
+    plot(X(Y==3,1), X(Y==3,2), 'o', 'MarkerFaceColor', [.3 .3 .9], 'MarkerEdgeColor','k');
+    hold off;
+    title(sprintf('%d trees, Train time: %.2fs, Test time: %.2fs\n', opts.numTrees, timetrain, timetest));
+    
+    subplot(122);
+    imagesc(xrange,yrange,decmap);
+    hold on;
+    set(gca,'ydir','normal');
+    plot(X(Y==1,1), X(Y==1,2), 'o', 'MarkerFaceColor', [.9 .3 .3], 'MarkerEdgeColor','k');
+    plot(X(Y==2,1), X(Y==2,2), 'o', 'MarkerFaceColor', [.3 .9 .3], 'MarkerEdgeColor','k');
+    plot(X(Y==3,1), X(Y==3,2), 'o', 'MarkerFaceColor', [.3 .3 .9], 'MarkerEdgeColor','k');
+    hold off;
+    
+    title(sprintf('Train accuracy: %f\n', mean(yhatTrain==Y)));
+end
+
+
 
 
 
