@@ -38,7 +38,7 @@ for T = 1:param.num
             if ~tree(T).node(n).dim % if this is a leaf node
                 tree(T).node(n).leaf_idx = cnt;
                 tree(T).leaf(cnt).label = cnt_total;
-                prob = reshape(histc(data(tree(T).node(n).idx,end),labels),[],1);
+                prob = reshape(histc(data(tree(T).node(n).idx,end),labels),[],1); % count at leaf node---use this to plot leaf node class distribution
 
                 tree(T).leaf(cnt).prob = prob; %.*prior; % Multiply by the prior probability of bootstrapped sub-training-set
                 tree(T).leaf(cnt).prob = tree(T).leaf(cnt).prob./sum(tree(T).leaf(cnt).prob); % Normalisation

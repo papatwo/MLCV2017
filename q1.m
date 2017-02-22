@@ -37,26 +37,95 @@ trees = growTrees(data_train,param);
 %% Use Karpathy RF library
 opts= struct;
 opts.depth= 5;
-opts.numTrees= 10;
+opts.numTrees= 1;
 opts.numSplits= 3;
 opts.verbose= false;
-opts.classifierID= 2; % weak learners to use. Can be an array for mix of weak learners too
+opts.classifierID= 1; % weak learners to use. Can be an array for mix of weak learners too
 
 X= bsxfun(@rdivide, bsxfun(@minus, data_train(:,1:2), mean(data_train(:,1:2))), var(data_train(:,1:2)));
 Y=data_train(:,3);
+frac = 1 - 1/exp(1); % Bootstrap sampling fraction: 1 - 1/e (63.2%)
+[N,D]=size(data_train);
+idx = randsample(N,ceil(N*frac),1);
+q1_subX = X(idx,:);
+q1_subY = Y(idx);
 % classify
 tic;
 m= forestTrain(X, Y, opts);
 timetrain= toc;
 tic;
+
+% for i=1:4
+%     Y = m.treeModels{1,i}.weakModels{1,1}.Y;
+%     YR = m.treeModels{1,i}.weakModels{1,1}.YR;
+%     YL = m.treeModels{1,i}.weakModels{1,1}.YL;
+%     
+%     figure(i);
+%     subplot(2,2,1)
+%     bar(hist(Y,unique(Y)));
+%     subplot(2,2,2)
+%     bar(hist(YR,unique(YR)));
+%     subplot(2,2,3)
+%     bar(hist(YL,unique(YL)));
+% end
+
 yhatTrain = forestTest(m, X);
 timetest= toc;
-bar(hist(Y,unique(Y)));
-bar(hist(YR,unique(YR)));
-bar(hist(YL,unique(YL)));
+
 %%%change input to subbags data
+%% QUESTION ONE FINAL
+% axis-aligned weaker learner
+load('q1_subbag.mat')
+opts= struct;
+opts.depth= 5;
+opts.numTrees= 1;
+opts.numSplits= 3;
+opts.verbose= false;
+ID=[1,2,3];
+
+for i=1:length(ID)
+tic;
+opt.classifierID = ID(i);
+tree{i}= forestTrain(q1_subX, q1_subY, opts);
+timetrain= toc;
+tic;
+
+Y = tree{i}.treeModels{1,1}.weakModels{1,1}.Y;
+YR = tree{i}.treeModels{1,1}.weakModels{1,1}.YR;
+YL = tree{i}.treeModels{1,1}.weakModels{1,1}.YL;
+
+figure(i);
+subplot(2,2,1); 
+bar(hist(Y,unique(Y)));title ('Parent Node class distribution')
+subplot(2,2,2)
+bar(hist(YR,unique(YR)));title ('Right children Node class distribution')
+subplot(2,2,3)
+bar(hist(YL,unique(YL)));title ('Left children Node class distribution')
+
+end
 
 
+
+
+%%
+subplot(2,2,4);
+r = [-1.5 1.5]; % Data range
+t = m.treeModels{1,1}.weakModels{1,1}.t;
+if m.treeModels{1,1}.weakModels{1,1}.r == 1
+    plot([t t],[r(1),r(2)],'r');
+else
+    plot([r(1),r(2)],[t t],'r');
+end
+
+hold on;
+plot(data(data(:,end)==1,1), data(data(:,end)==1,2), 'o', 'MarkerFaceColor', [.9 .3 .3], 'MarkerEdgeColor','k');
+hold on;
+plot(data(data(:,end)==2,1), data(data(:,end)==2,2), 'o', 'MarkerFaceColor', [.3 .9 .3], 'MarkerEdgeColor','k');
+hold on;
+plot(data(data(:,end)==3,1), data(data(:,end)==3,2), 'o', 'MarkerFaceColor', [.3 .3 .9], 'MarkerEdgeColor','k');
+
+axis([r(1) r(2) r(1) r(2)]);
+hold off;
 %%
 
 % Look at classifier distribution for fun, to see what classifiers were
