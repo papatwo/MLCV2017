@@ -76,33 +76,52 @@ timetest= toc;
 %% QUESTION ONE FINAL
 % axis-aligned weaker learner
 load('q1_subbag.mat')
+q1_subX= bsxfun(@rdivide, bsxfun(@minus, q1_subX(:,1:2), mean(q1_subX(:,1:2))), var(q1_subX(:,1:2)));
 opts= struct;
 opts.depth= 5;
 opts.numTrees= 10;
 opts.numSplits= 3;
 opts.verbose= false;
-ID=[1,2,3]; % choose different split function
-leafidx=randperm(15,4); % select 4 leafnodes to visualised their class distribution
+ID=[1 2 3]; % choose different split function
+%leafidx=randperm(15,4); %% WRONG!!! select 4 leafnodes to visualised their class distribution
+
+leafidx=randperm(15,4); % can only select node 8-15 which are last internal nodes
+% dist of some leafnodes are 0??? why????
 
 for i=1:length(ID) % loop different split funcs
 tic;
 opts.classifierID = ID(i);
 tree{i}= forestTrain(q1_subX, q1_subY, opts); % get the tree for current split func
 timetrain= toc;
-tic;
-
+tic;  
 Y = tree{i}.treeModels{1,1}.weakModels{1,1}.Y; % parent node
 YR = tree{i}.treeModels{1,1}.weakModels{1,1}.YR; % right children node
 YL = tree{i}.treeModels{1,1}.weakModels{1,1}.YL; % left children node
-leaf = tree{i}.treeModels{1,1}.leafdist; % leaf nodes (actual counts of each model)
+leafdist = tree{i}.treeModels{1,1}.leafdist;
+
+leaf=[];
+for c=1:length(leafdist)
+    [~,leaf_class] =max(leafdist(c,:)); % leaf nodes (actual counts of each model)
+    leaf = [leaf;leaf_class]; 
+end
+leafC{i} = leaf;
+figure;bar(hist(leafC{i},[1 2 3]))
+title(['Leaf distribution of SF' num2str(i) ' of all 16 leaf nodes of SF '])
 
 figure; % class distribution of parent node and children nodes
 subplot(2,2,1); 
 bar(hist(Y,unique(Y)));title ('Parent Node class distribution')
 subplot(2,2,2)
-bar(hist(YR,unique(YR)));title ('Right children Node class distribution')
+bar(hist(YR,unique(Y)));title ('Right children Node class distribution')
 subplot(2,2,3)
-bar(hist(YL,unique(YL)));title ('Left children Node class distribution')
+bar(hist(YL,unique(Y)));title ('Left children Node class distribution')
+end
+%%
+% information gain of base node for tree constructed by different split
+% funcs
+for k=1:length(tree)
+    Gain(k)=tree{1,k}.treeModels{1,1}.weakModels{1,1}.maxgain;
+end
 
 figure; % class distribution of slected leaf nodes
 for j=1:length(leafidx)
@@ -111,8 +130,8 @@ for j=1:length(leafidx)
     fprintf('class ditribution of node %d. \n',leafidx(j))
 end
 
-end
 
+%% QUESTION TWO
 % Test 4 data points given in the script
 test_point = [-0.5 -0.7; 0.4 0.3; -0.7 0.4; 0.5 -0.5];
 
