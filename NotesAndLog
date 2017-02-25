@@ -8,3 +8,25 @@ On trying different split function
 - Suggestion: linear split functions with form y = ax + b
   -> two params --- enough complexity
   -> still easy to implement --- compare value above/below function
+
+Q3
+[FRAMES, DESCRS] = VL_PHOW(IM) extracts PHOW features from the image IM. PHOW is simply dense SIFT applied at several resolutions. 
+
+DESCRS: 
+Each column is a feature frame (descriptor) and has the format [X;Y;S;TH]
+X,Y : (fractional) center of the frame
+S : scale
+TH : orientation (in radians)
+
+
+desc_tr (DESCRS in RF-2017)
+10x15 cell  (15 images @ class)
+each cell is struct (128xn , n ~ 200 to 300) with columns of descriptors
+
+desc_sel (100k descriptors)
+128x100000 single
+
+
+[centres, assignments] = vl_kmeans(desc_sel, 10, 'Initialization', 'plusplus');
+centres 128x10singles
+assignments 100000 uint (labels)
