@@ -18,6 +18,10 @@ X,Y : (fractional) center of the frame
 S : scale
 TH : orientation (in radians)
 
+VLFeat SIFT descriptor uses the following convention. The y axis points downwards and angles are measured clockwise (to be consistent with the standard image convention).
+The 3-D histogram (consisting of 8×4×4=1288×4×4=128 bins) is stacked as a single 128-dimensional vector,
+where the fastest varying dimension is the orientation and the slowest the y spatial coordinate.
+
 
 desc_tr (DESCRS in RF-2017)
 10x15 cell  (15 images @ class)
