@@ -13,10 +13,6 @@ Q3
 [FRAMES, DESCRS] = VL_PHOW(IM) extracts PHOW features from the image IM. PHOW is simply dense SIFT applied at several resolutions. 
 
 DESCRS: 
-Each column is a feature frame (descriptor) and has the format [X;Y;S;TH]
-X,Y : (fractional) center of the frame
-S : scale
-TH : orientation (in radians)
 
 VLFeat SIFT descriptor uses the following convention. The y axis points downwards and angles are measured clockwise (to be consistent with the standard image convention).
 The 3-D spatial histogram of the image gradients(consisting of 8×4×4=1288×4×4=128 bins) is stacked as a single 128-dimensional vector,
