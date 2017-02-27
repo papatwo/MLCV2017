@@ -13,8 +13,11 @@ switch MODE
         classList = dir(folderName);
         classList = {classList(3:end).name} % 10 classes
         
+<<<<<<< HEAD
         numBins = 256; % for instance,
         
+=======
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
         disp('Loading training images...')
         % Load Images -> Description (Dense SIFT)
         cnt = 1;
@@ -22,12 +25,15 @@ switch MODE
             figure('Units','normalized','Position',[.05 .1 .4 .9]);
             suptitle('Training image samples');
         end
+<<<<<<< HEAD
         
         desc_sel = cell(length(classList),1);
         codeword = cell(length(classList),1);
         
         figure;
         
+=======
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
         for c = 1:length(classList)
             subFolderName = fullfile(folderName,classList{c});
             imgList = dir(fullfile(subFolderName,'*.jpg'));
@@ -39,7 +45,11 @@ switch MODE
                 I = imread(fullfile(subFolderName,imgList(imgIdx_tr(i)).name));
                 
                 % Visualise
+<<<<<<< HEAD
                 if i < 6 && showImg
+=======
+                if i < 6 & showImg
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
                     subaxis(length(classList),5,cnt,'SpacingVert',0,'MR',0);
                     imshow(I);
                     cnt = cnt+1;
@@ -53,6 +63,7 @@ switch MODE
                 % For details of image description, see http://www.vlfeat.org/matlab/vl_phow.html
                 [~, desc_tr{c,i}] = vl_phow(single(I),'Sizes',PHOW_Sizes,'Step',PHOW_Step); %  extracts PHOW features (multi-scaled Dense SIFT)
             end
+<<<<<<< HEAD
             % Build visual vocabulary (codebook) for 'Bag-of-Words method'
             desc_sel{c} = single(vl_colsubset(cat(2,desc_tr{c,:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
 
@@ -73,10 +84,33 @@ switch MODE
         
         
         % disp('Building visual codebook...')
+=======
+        end
+        
+        disp('Building visual codebook...')
+        % Build visual vocabulary (codebook) for 'Bag-of-Words method'
+        desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
+        
+        % K-means clustering
+        numBins = 256; % for instance,
+        
+        [centres, assignments] = vl_kmeans(desc_sel, 10, 'Initialization', 'plusplus');
+        
+        vocab = cell(10,1);
+        for i = 1:10
+            findWord = assignments == i;
+            vocab{i} = desc_sel(:,findWord);
+            [~,vocabSize] = size(vocab{i});
+        end
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
         
         
         
         
+<<<<<<< HEAD
+=======
+       
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
         disp('Encoding Images...')
         % Vector Quantisation
         
@@ -91,6 +125,7 @@ end
 switch MODE
     case 'Caltech'
         if showImg
+<<<<<<< HEAD
             figure('Units','normalized','Position',[.05 .1 .4 .9]);
             suptitle('Testing image samples');
         end
@@ -101,6 +136,13 @@ switch MODE
         
         codeword_te = cell(length(classList),length(imgIdx_te));
         
+=======
+        figure('Units','normalized','Position',[.05 .1 .4 .9]);
+        suptitle('Testing image samples');
+        end
+        disp('Processing testing images...');
+        cnt = 1;
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
         % Load Images -> Description (Dense SIFT)
         for c = 1:length(classList)
             subFolderName = fullfile(folderName,classList{c});
@@ -111,7 +153,11 @@ switch MODE
                 I = imread(fullfile(subFolderName,imgList(imgIdx_te(i)).name));
                 
                 % Visualise
+<<<<<<< HEAD
                 if i < 6 && showImg
+=======
+                if i < 6 & showImg
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
                     subaxis(length(classList),5,cnt,'SpacingVert',0,'MR',0);
                     imshow(I);
                     cnt = cnt+1;
@@ -122,6 +168,7 @@ switch MODE
                     I = rgb2gray(I);
                 end
                 [~, desc_te{c,i}] = vl_phow(single(I),'Sizes',PHOW_Sizes,'Step',PHOW_Step);
+<<<<<<< HEAD
                 [codeword_te{c,i}, visualword_te] = vl_kmeans(desc_te{c,i}, numBins, 'Initialization', 'plusplus');
                 if showSpatHist
                     histogram(visualword_te, numBins);
@@ -138,6 +185,15 @@ switch MODE
         if showImg
             figure('Units','normalized','Position',[.5 .1 .4 .9]);
             suptitle('Testing image representations: 256-D histograms');
+=======
+            
+            end
+        end
+        suptitle('Testing image samples');
+                if showImg
+            figure('Units','normalized','Position',[.5 .1 .4 .9]);
+        suptitle('Testing image representations: 256-D histograms');
+>>>>>>> 9f73a11a63a173c55b55e88c1a887905d1dbd26e
         end
 
         % Quantisation

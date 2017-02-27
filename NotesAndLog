@@ -1,0 +1,32 @@
+Q1
+On trying different split function
+- May be better to stick to simple (ie linear) split features for WEAK learners
+  -> meant to be linearly combined to form strong learner
+  -> should be learning simple features
+  -> "it is empirically proved that a weak feature (axis-aligned, two-pixel tests) has already work well"
+      --- Randomised Decision Forests for Classification, slide 15 - on non-linear weak learner
+- Suggestion: linear split functions with form y = ax + b
+  -> two params --- enough complexity
+  -> still easy to implement --- compare value above/below function
+
+Q3
+[FRAMES, DESCRS] = VL_PHOW(IM) extracts PHOW features from the image IM. PHOW is simply dense SIFT applied at several resolutions. 
+
+DESCRS: 
+
+VLFeat SIFT descriptor uses the following convention. The y axis points downwards and angles are measured clockwise (to be consistent with the standard image convention).
+The 3-D spatial histogram of the image gradients(consisting of 8×4×4=1288×4×4=128 bins) is stacked as a single 128-dimensional vector,
+where the fastest varying dimension is the orientation and the slowest the y spatial coordinate.
+
+
+desc_tr (DESCRS in RF-2017)
+10x15 cell  (15 images @ class)
+each cell is struct (128xn , n ~ 200 to 300) with columns of descriptors
+
+desc_sel (100k descriptors)
+128x100000 single
+
+
+[centres, assignments] = vl_kmeans(desc_sel, 10, 'Initialization', 'plusplus');
+centres 128x10singles
+assignments 100000 uint (labels)
