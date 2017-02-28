@@ -73,6 +73,10 @@ yhatTrain = forestTest(m, X);
 timetest= toc;
 
 %%%change input to subbags data
+
+
+
+
 %% QUESTION ONE FINAL
 % axis-aligned weaker learner
 load('q1_subbag.mat')
@@ -82,21 +86,27 @@ opts.depth= 5;
 opts.numTrees= 10;
 opts.numSplits= 3;
 opts.verbose= false;
-ID=[1 2 3]; % choose different split function
+ID=[1]; % choose different split function
 %leafidx=randperm(15,4); %% WRONG!!! select 4 leafnodes to visualised their class distribution
 
-leafidx=randperm(15,4); % can only select node 8-15 which are last internal nodes
+leafidx=randperm(16,9); % can only select node 8-15 which are last internal nodes
 % dist of some leafnodes are 0??? why????
-
+data = [q1_subX q1_subY];
 for i=1:length(ID) % loop different split funcs
 tic;
 opts.classifierID = ID(i);
-tree{i}= forestTrain(q1_subX, q1_subY, opts); % get the tree for current split func
+tree{i}= forestTrain(data(:,1:2), data(:,end), opts); % get the tree for current split func
 timetrain= toc;
 tic;  
 Y = tree{i}.treeModels{1,1}.weakModels{1,1}.Y; % parent node
 YR = tree{i}.treeModels{1,1}.weakModels{1,1}.YR; % right children node
 YL = tree{i}.treeModels{1,1}.weakModels{1,1}.YL; % left children node
+dim = tree{i}.treeModels{1,1}.weakModels{1,1}.r; % selected axis
+dec = tree{i}.treeModels{1,1}.weakModels{1,1}.dec; % threshold status
+ig_best = tree{i}.treeModels{1,1}.weakModels{1,1}.maxgain;
+t = tree{i}.treeModels{1,1}.weakModels{1,1}.t;
+%XL = q1_subX(dec,:);
+%XR = q1_subX(~dec,:);
 leafdist = tree{i}.treeModels{1,1}.leafdist;
 
 leaf=[];
@@ -104,17 +114,20 @@ for c=1:length(leafdist)
     [~,leaf_class] =max(leafdist(c,:)); % leaf nodes (actual counts of each model)
     leaf = [leaf;leaf_class]; 
 end
-leafC{i} = leaf;
-figure;bar(hist(leafC{i},[1 2 3]))
-title(['Leaf distribution of SF' num2str(i) ' of all 16 leaf nodes of SF '])
+% leafC{i} = leaf;
+% figure;bar(hist(leafC{i},[1 2 3]))
+% title(['Leaf distribution of SF' num2str(i) ' of all 16 leaf nodes of SF '])
 
 figure; % class distribution of parent node and children nodes
+% suptitle('Nodes Class Distribution')
 subplot(2,2,1); 
-bar(hist(Y,unique(Y)));title ('Parent Node class distribution')
+bar(hist(Y,unique(Y)));title ('Class Distribution of Parent Node')
 subplot(2,2,2)
-bar(hist(YR,unique(Y)));title ('Right children Node class distribution')
+bar(hist(YR,unique(Y)));title ('Right children Node')
 subplot(2,2,3)
-bar(hist(YL,unique(Y)));title ('Left children Node class distribution')
+bar(hist(YL,unique(Y)));title ('Left children Node')
+subplot(2,2,4)
+RFvisualise_splitfunc(dec,data,dim,t,ig_best)
 end
 %%
 % information gain of base node for tree constructed by different split
@@ -123,18 +136,41 @@ for k=1:length(tree)
     Gain(k)=tree{1,k}.treeModels{1,1}.weakModels{1,1}.maxgain;
 end
 
-figure; % class distribution of slected leaf nodes
+% class distribution of slected leaf nodes
+figure;
 for j=1:length(leafidx)
-    subplot(2,2,j)
-    bar([1 2 3],leaf(leafidx(j),:));
-    fprintf('class ditribution of node %d. \n',leafidx(j))
+    subplot(3,3,j)
+    bar(leafdist(j,:))
+    title(sprintf('Leaf node %d',leafidx(j)))   
+    %bar([1 2 3],leaf(leafidx(j),:));
+    fprintf('class distribution of node %d. \n',leafidx(j))
 end
+
+%% GROW ALL TREES
+%init;
+%[data_train, data_test] = getData('Toy_Spiral'); 
+X= bsxfun(@rdivide, bsxfun(@minus, data_train(:,1:2), mean(data_train(:,1:2))), var(data_train(:,1:2)));
+Y= data_train(:,end);
+opts= struct;
+opts.depth= 5;
+opts.numTrees= 10;
+opts.numSplits= 3;
+opts.verbose= false;
+ID=[1]; % choose different split function
+tree{1}= forestTrain(X, Y, opts); % get the tree for current split func
 
 
 %% QUESTION TWO
 % Test 4 data points given in the script
 test_point = [-0.5 -0.7; 0.4 0.3; -0.7 0.4; 0.5 -0.5];
 
+for n=1:length(test_point)%4 % how to get all 22801 test point prob
+    leaves = testTrees([test_point(n,:) 0],trees);
+    % average the class distributions of leaf nodes of all trees
+    p_rf = trees(1).prob(leaves,:)
+    p_rf_sum = sum(p_rf)/length(trees)
+end
+%%
 for k=1:length(tree)
     [Yhard, Ysoft] = forestTest(tree{k}, test_point, opts);
     % Yhard are hard assignments to X's, Ysoft is NxK array of
