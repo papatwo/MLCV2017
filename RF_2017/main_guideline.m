@@ -239,10 +239,15 @@ end
 init;
 
 % Select dataset
+[data_train, data_test] = getData('Caltech');
+
 % we do bag-of-words technique to convert images to vectors (histogram of codewords)
 % Set 'showImg' in getData.m to 0 to stop displaying training and testing images and their feature vectors
-[data_train, data_test] = getData('Caltech');
-close all;
+param.depth = 5;        % trees depth
+param.splitNum = 3;     % Number of split functions to try
+param.split = 'IG';     % Currently support 'information gain' only
+trees = growTrees(data_train,param);
+% close all;
 
 
 
