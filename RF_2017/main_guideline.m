@@ -153,9 +153,9 @@ end
 dense_leaves = testTrees_fast(data_test,trees);
 
 % Get the probability of each data_test point from all TEN trees
-for L = 1:length(data_test)
+for L = 1:length(data_test(:,1))
    p_rf_dense = trees(1).prob(dense_leaves(L,:),:); 
-   p_rf_dense_sum(L,:) = sum(p_rf_dense)/length(trees);
+   p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
 end
 
 % Visualise the 
@@ -195,7 +195,7 @@ for k = 1:length(T_num)
     dense_leaves = testTrees_fast(data_test,diff_t{k});
     for L = 1:length(data_test)
         p_rf_dense = diff_t{k}(1).prob(dense_leaves(L,:),:);
-        p_rf_dense_sum(L,:) = sum(p_rf_dense)/length(trees);
+        p_rf_dense_sum(L,:) = mean(p_rf_dense);
     end
     fig = visualise(data_train,p_rf_dense_sum,[],0);
     title(sprintf('Visualise of Test Data Classification of %d Trees',T_num(k)))
@@ -243,19 +243,32 @@ init;
 
 % we do bag-of-words technique to convert images to vectors (histogram of codewords)
 % Set 'showImg' in getData.m to 0 to stop displaying training and testing images and their feature vectors
+% close all;
+
+% Set the random forest parameters ...
+param.num = 10;         % Number of trees
 param.depth = 5;        % trees depth
 param.splitNum = 3;     % Number of split functions to try
 param.split = 'IG';     % Currently support 'information gain' only
-trees = growTrees(data_train,param);
-% close all;
 
-
-
-% Set the random forest parameters ...
 % Train Random Forest ...
+figure;
+trees = growTrees(data_train,param);
 % Evaluate/Test Random Forest ...
-% show accuracy and confusion matrix ...
+dense_leaves = testTrees_fast(data_test,trees);
+% Get the probability of each data_test point from all TEN trees
+for L = 1:length(data_test(:,1))
+   p_rf_dense = trees(1).prob(dense_leaves(L,:),:); 
+   p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
+end
 
+% Visualise the 
+fig = visualise(data_train,p_rf_dense_sum,[],0);
+title('Visualise of Test Data Classification with Colour Encoded')
+% show accuracy and confusion matrix ...
+p_rf=p_rf_dense_sum;
+figure;
+confus_script
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % random forest codebook for Caltech101 image categorisation
