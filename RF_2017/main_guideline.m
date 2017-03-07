@@ -244,7 +244,7 @@ init;
 % we do bag-of-words technique to convert images to vectors (histogram of codewords)
 % Set 'showImg' in getData.m to 0 to stop displaying training and testing images and their feature vectors
 % close all;
-
+%% Default settings
 % Set the random forest parameters ...
 param.num = 10;         % Number of trees
 param.depth = 5;        % trees depth
@@ -263,13 +263,43 @@ for L = 1:length(data_test(:,1))
 end
 
 % Visualise the 
-fig = visualise(data_train,p_rf_dense_sum,[],0);
-title('Visualise of Test Data Classification with Colour Encoded')
+% fig = visualise(data_train,p_rf_dense_sum,[],0);
+% title('Visualise of Test Data Classification with Colour Encoded')
 % show accuracy and confusion matrix ...
 p_rf=p_rf_dense_sum;
 figure;
 confus_script
 
+%% the number of trees
+ %T_num = [1 5 10 20 50]; % give a set of tree numbers to test
+T_num = [20 50];
+% Set the random forest parameters for instance, 
+param.depth = 5;        % trees depth
+param.splitNum = 3;     % Number of split functions to try
+param.split = 'IG';     % Currently support 'information gain' only
+
+% grow corresponding RF with respect to the num of trees varied
+
+for n = 1:length(T_num)   
+    figure;
+    param.num = T_num(n);         % Number of trees
+    diff_t{n} = growTrees(data_train,param);
+end
+
+% test on different RF (num of trees)
+for k = 1:length(T_num)
+    dense_leaves = testTrees_fast(data_test,diff_t{k});
+    for L = 1:length(data_test(:,1))
+        p_rf_dense = diff_t{k}(1).prob(dense_leaves(L,:),:);
+        p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
+    end
+    p_rf=p_rf_dense_sum;
+    figure;
+    confus_script
+end
+
+%%
+clearvars -except data_test data_train Type
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % random forest codebook for Caltech101 image categorisation
 % .....
