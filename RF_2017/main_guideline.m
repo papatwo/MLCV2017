@@ -20,6 +20,8 @@ param.depth = 5;        % trees depth
 param.splitNum = 3;     % Number of split functions to try
 param.split = 'IG';     % Currently support 'information gain' only
 
+
+
 %%%%%%%%%%%%%
 % check the training and testing data
     % data_train(:,1:2) : [num_data x dim] Training 2D vectors
@@ -54,7 +56,7 @@ end
 % splitting the first node
 bestig= -100;
 iter = param.splitNum;
-
+data_train = bag{1,1}; % use one subbag to split one tree
 for n = 1:iter
     visualise = 1;
     % axis-aligned split function:
@@ -99,7 +101,7 @@ trees(T).node(1) = struct('idx',idx,'t',nan,'dim',-1,'prob',[]);
 
 % Split Nodes
 for n = 1:2^(param.depth-1)-1
-    [trees(T).node(n),trees(T).node(n*2),trees(T).node(n*2+1)] = splitNode(data_train,trees(T).node(n),param);
+    [trees(T).node(n),trees(T).node(n*2),trees(T).node(n*2+1)] = splitNodeTest(data_train,trees(T).node(n),param);
 end
 
 % Store class distribution in the leaf nodes.
@@ -117,7 +119,7 @@ trees = growTrees(data_train,param);
 
 % grab the few data points and evaluate them one by one by the leant RF
 test_point = [-.5 -.7; .4 .3; -.7 .4; .5 -.5];
-figure(1);plot_toydata(data_train);
+figure;plot_toydata(data_train);
 plot(test_point(:,1), test_point(:,2), 's', 'MarkerSize',20, 'MarkerFaceColor', [.9 .9 .9], 'MarkerEdgeColor','k');
 title('Visualisation of Test Points');
 
@@ -125,7 +127,7 @@ for n=1:length(test_point)%4 % how to get all 22801 test point prob
     leaves = testTrees([test_point(n,:) 0],trees);
     % average the class distributions of leaf nodes of all trees
     p_rf = trees(1).prob(leaves,:);
-    p_rf_sum(n,:) = sum(p_rf)/length(trees);
+    p_rf_sum(n,:) = mean(p_rf,1);
     figure;
     for p = 1:length(leaves) % visualise the leaf class distribution of all ten trees
         subplot(2,5,p);bar(p_rf(p,:));
@@ -271,8 +273,7 @@ figure;
 confus_script
 
 %% the number of trees
- %T_num = [1 5 10 20 50]; % give a set of tree numbers to test
-T_num = [20 50];
+T_num = [1 5 10 20 50]; % give a set of tree numbers to test
 % Set the random forest parameters for instance, 
 param.depth = 5;        % trees depth
 param.splitNum = 3;     % Number of split functions to try
@@ -297,6 +298,40 @@ for k = 1:length(T_num)
     figure;
     confus_script
 end
+
+
+%% the depth of trees 
+% error when running depth of 20!!!!!!!!!!!
+depth = [ 5 10 20 ]; % give a set of tree numbers to test
+% Set the random forest parameters for instance, 
+param.num = 10;        % trees depth
+param.splitNum = 3;     % Number of split functions to try
+param.split = 'IG';     % Currently support 'information gain' only
+
+% grow corresponding RF with respect to the num of trees varied
+
+for n = 1:length(depth)   
+    figure;
+    param.depth = depth(n);         % Number of trees
+    diff_t{n} = growTrees(data_train,param);
+end
+
+% test on different RF (num of trees)
+for k = 1:length(depth)
+    dense_leaves = testTrees_fast(data_test,diff_t{k});
+    for L = 1:length(data_test(:,1))
+        p_rf_dense = diff_t{k}(1).prob(dense_leaves(L,:),:);
+        p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
+    end
+    p_rf=p_rf_dense_sum;
+    figure;
+    confus_script
+end
+
+
+%% Random forest codebook
+Mdl = TreeBagger(10,data_train(:,1:end-1),data_train(:,end),'OOBPrediction','On','Method','classification');
+
 
 %%
 clearvars -except data_test data_train Type
