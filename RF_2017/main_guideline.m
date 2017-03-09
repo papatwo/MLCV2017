@@ -84,24 +84,62 @@ for n = 1:iter
     end
     
     if visualise
-        visualise_splitfunc(idx_,data_train,dim,t,ig,0);
+        visualise_splitfuncTest(idx_,data_train,dim,t,ig,0);
         pause();
     end    
 end
 
 figure; % visualise the best split
-visualise_splitfunc(idx_best,data_train,dim_best,t_best,bestig,0);
+visualise_splitfuncTest(idx_best,data_train,dim_best,t_best,bestig,0);
 
 %% CHANGE SPLIT FUNCTION???
+% splitting the first node
+bestig= -100;
+iter = param.splitNum;
+data = bag{1,1}; % use one subbag to split one tree
+[N,D]=size(data);
+for n = 1:iter
+    visualise = 0;
+    % axis-aligned split function:
+    r1 = randi(D-1);
+%     r2 = randi(D-1); % Pick one random dimension -- pick x-axis or y-axis
+    w= randn(2, 1); %
+    idx_ = [data(:, [r1 ]), ones(N, 1)]*w < 0; 
+    %dim = [r1 r2];
+    t = w;
+    l_data = data_train(idx_,:); % data go LEFT branch
+    r_data = data_train(~idx_,:); % data go RIGHT branch
+    % calculate entropy   
+    H = getE(data_train); % before split
+    HL = getE(l_data); %after split - L
+    HR = getE(r_data); % - R
+    % calculate information gain and update the best ig
+    ig = H - (sum(idx_)/length(idx_)*HL + sum(~idx_)/length(idx_)*HR);
+    
+    if bestig < ig
+        bestig = ig;
+        t_best = t;
+        dim_best = dim;
+        idx_best = idx_;
+    end
+    
+%     if visualise
+%         visualise_splitfunc(idx_,data_train,dim,t,bestig,0);
+%         pause();
+%     end    
+end
 
+figure; % visualise the best split
+visualise_splitfuncTest(idx_best,data_train,dim_best,t_best,bestig,0);
 %% Q3 Grow ONE complete tree
 % for growing 1 tree first, reset the param
 T = 1;
+idx=1:length(bag{1}); 
 trees(T).node(1) = struct('idx',idx,'t',nan,'dim',-1,'prob',[]);
 
 % Split Nodes
 for n = 1:2^(param.depth-1)-1
-    [trees(T).node(n),trees(T).node(n*2),trees(T).node(n*2+1)] = splitNodeTest(data_train,trees(T).node(n),param);
+    [trees(T).node(n),trees(T).node(n*2),trees(T).node(n*2+1)] = splitNode(data_train,trees(T).node(n),param);
 end
 
 % Store class distribution in the leaf nodes.
@@ -111,8 +149,8 @@ figure;
 visualise_leaf
 
 %% Q4 Grow all 10 trees
-trees = growTrees(data_train,param);
-
+trees = growTrees(data_train,param); 
+% growTree is currently using linear split 3.9 16:41
 %% Q5 Testing data points
 %%%%%%%%%%%%%%%%%%%%%%
 % Evaluate/Test Random Forest
