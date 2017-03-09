@@ -1,7 +1,7 @@
 function [node,nodeL,nodeR] = splitNode(data,node,param)
 % Split node
 
-visualise = 1;
+visualise = 0;
 
 % Initilise child nodes
 iter = param.splitNum;

@@ -41,15 +41,7 @@ for n = 1:iter
         
         ig = getIG(data,idx_); % Calculate information gain: the point with max ig which satisfies the threshold
         % the info gain of all data at the left and right children nodes
-        if visualise
-            visualise_splitfunc(idx_,data,dim,t,ig,n);
-            pause(0.3);
-        end
-        if visualise
-            visualise_splitfunc(idx_best,data,dim,t,ig_best,0)
-            fprintf('Information gain = %f. \n',ig_best);
-            pause(0.1);
-        end
+    
         
     elseif mode == 2
         % linear split function
@@ -58,8 +50,10 @@ for n = 1:iter
         else
             t = param.threshold; % set a fixed threshold
         end
+        r1= randi(D); %class number
+        r2= randi(D); %class number
         w= randn(3, 1); %
-        idx_ = [data(:, [1 2]), ones(N, 1)]*w < t;
+        idx_ = [data(:, [r1 r2]), ones(N, 1)]*w < t;
         ig = getIG(data,idx_);
     end
     dim=3;
@@ -90,8 +84,13 @@ end
 function [node, ig_best, idx_best] = updateIG(node,ig_best,ig,t,idx,dim,idx_best) % Update information gain
 if ig > ig_best
     ig_best = ig;
-    node.t = t;
-    node.dim = dim;
+    if mode ==1
+        node.t = t;
+        node.dim = dim;
+    elseif mode ==2
+        node.dim=[r1,r2];
+        node.t=w;
+    end
     idx_best = idx;
 else
     idx_best = idx_best;

@@ -58,7 +58,7 @@ bestig= -100;
 iter = param.splitNum;
 data_train = bag{1,1}; % use one subbag to split one tree
 for n = 1:iter
-    visualise = 1;
+    visualise = 0;
     % axis-aligned split function:
     dim = randi(D-1); % Pick one random dimension -- pick x-axis or y-axis
     d_min = single(min(data_train(:,dim))) + eps; % Find the data range of this dimension
@@ -257,7 +257,7 @@ param.split = 'IG';     % Currently support 'information gain' only
 figure;
 trees = growTrees(data_train,param);
 % Evaluate/Test Random Forest ...
-dense_leaves = testTrees_fast(data_test,trees);
+dense_leaves = testTrees_fast(data_test,trees); 
 % Get the probability of each data_test point from all TEN trees
 for L = 1:length(data_test(:,1))
    p_rf_dense = trees(1).prob(dense_leaves(L,:),:); 
@@ -330,7 +330,16 @@ end
 
 
 %% Random forest codebook
-Mdl = TreeBagger(10,data_train(:,1:end-1),data_train(:,end),'OOBPrediction','On','Method','classification');
+[rf_data_train, rf_data_test]=rf_code('Caltech');
+trees = growTrees(rf_data_train,param);
+dense_leaves = testTrees_fast(rf_data_test,trees);
+for L = 1:length(rf_data_test(:,1))
+p_rf_dense = trees(1).prob(dense_leaves(L,:),:);
+p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
+end
+p_rf=p_rf_dense_sum;
+figure;
+confus_script
 
 
 %%
