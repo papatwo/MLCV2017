@@ -148,6 +148,22 @@ makeLeaf;
 figure;
 visualise_leaf
 
+%% linear grow one tree
+T = 1;
+idx=1:length(bag{1}); 
+trees(T).node(1) = struct('idx',idx,'t',nan,'dim',-1,'prob',[]);
+
+% Split Nodes
+for n = 1:2^(param.depth-1)-1
+    [trees(T).node(n),trees(T).node(n*2),trees(T).node(n*2+1)] = splitNodeLinear(data_train,trees(T).node(n),param);
+end
+
+% Store class distribution in the leaf nodes.
+makeLeaf;
+% Visualise the leaf node class distribution
+figure;
+visualise_leaf
+clear trees
 %% Q4 Grow all 10 trees
 trees = growTrees(data_train,param); 
 % growTree is currently using linear split 3.9 16:41

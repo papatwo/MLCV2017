@@ -29,13 +29,13 @@ for n = 1:iter
         % linear split function
 
         r1= randi(D-1); %class number
-        r2= randi(D-1); %class number
-        w= randn(3, 1); %
-        idx_ = [data(:, [r1 r2]), ones(N, 1)]*w < 0;
+        %r2= randi(D-1); %class number
+        w= randn(2, 1); %
+        idx_ = [data(:, r1), ones(N, 1)]*w < 0;
         ig = getIG(data,idx_);
 
     
-    [node, ig_best, idx_best] = updateIG(node,ig_best,ig,w,idx_,[r1 r2],idx_best);    
+    [node, ig_best, idx_best] = updateIG(node,ig_best,ig,w,idx_,r1,idx_best);    
 end
 
 nodeL.idx = idx(idx_best);
