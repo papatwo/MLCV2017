@@ -13,26 +13,33 @@ if length(node.idx) <= 5 % make this node a leaf if has less than 5 data points
     node.dim = 0;
     return;
 end
+ 
 
 idx = node.idx;
 data = data(idx,:);
 [N,D] = size(data);
 ig_best = -inf; % Initialise best information gain
 idx_best = [];
+% if node.E==0
+%     node.t = nan;
+%     node.dim = 0;
+%     return;
+% end
+
 for n = 1:iter
     
     % Split function - Modify here and try other types of split function
     
     % axis-aligned split function:
     dim = randi(D-1); % Pick one random dimension -- pick x-axis or y-axis
-    d_min = single(min(data(:,dim))) + eps+0.1; % Find the data range of this dimension
-    d_max = single(max(data(:,dim))) - eps-0.1;
+    d_min = single(min(data(:,dim))) + eps; % Find the data range of this dimension
+    d_max = single(max(data(:,dim))) - eps;
     t = d_min + rand*((d_max-d_min)); % Pick a random value within the range as threshold
     idx_ = data(:,dim) < t;
 
     ig = getIG(data,idx_); % Calculate information gain: the point with max ig which satisfies the threshold
     % the info gain of all data at the left and right children nodes
-    
+
     if visualise
         visualise_splitfunc(idx_,data,dim,t,ig,n);
         pause(0.3);
