@@ -1,4 +1,4 @@
-function [ data_train, data_query ] = getData( MODE )
+function [ data_train, data_query, booktime ] = getData( MODE )
 % Generate training and testing data
 
 % Data Options:
@@ -128,9 +128,10 @@ switch MODE
         % codebook: independent features (a representative of similar patches)
         desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
         
-        numBins = 256; % 256 feature??? 
+        numBins = 64; % 256 feature??? 
+        tic;
         book = kmeans(desc_sel, numBins); % construct visual codebook (256 clusters)
-        
+        booktime=toc;
         % Vector Quantisation
         k = 1; figure('Units','normalized','Position',[.5 .1 .4 .9]);
         suptitle('Training image representations: 256-D histograms')

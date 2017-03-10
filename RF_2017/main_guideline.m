@@ -128,12 +128,7 @@ testRF_Axis;
 figure;
 trees_linear = b_treeL;
 testRF_Linear;
-
-
-
 %%
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % experiment with Caltech101 dataset for image categorisation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,7 +136,7 @@ testRF_Linear;
 init;
 
 % Select dataset
-[data_train, data_test] = getData('Caltech');
+[data_train, data_test,booktime] = getData('Caltech');
 
 % we do bag-of-words technique to convert images to vectors (histogram of codewords)
 % Set 'showImg' in getData.m to 0 to stop displaying training and testing images and their feature vectors
@@ -154,10 +149,9 @@ param.splitNum = 3;     % Number of split functions to try
 param.split = 'IG';     % Currently support 'information gain' only
 
 % Train Random Forest ...
-figure;
 trees = growTrees(data_train,param);
 % Evaluate/Test Random Forest ...
-dense_leaves = testTrees_fast(data_test,trees); 
+dense_leaves = testTrees_fast([data_test(:,1:end-1),zeros(size(data_test,1),1)],trees); 
 % Get the probability of each data_test point from all TEN trees
 for L = 1:length(data_test(:,1))
    p_rf_dense = trees(1).prob(dense_leaves(L,:),:); 
@@ -173,7 +167,7 @@ figure;
 confus_script
 
 %% the number of trees
-T_num = [1 5 10 20 50]; % give a set of tree numbers to test
+T_num = [5 10 20 50 100 200]; % give a set of tree numbers to test
 % Set the random forest parameters for instance, 
 param.depth = 5;        % trees depth
 param.splitNum = 3;     % Number of split functions to try
@@ -182,11 +176,10 @@ param.split = 'IG';     % Currently support 'information gain' only
 % grow corresponding RF with respect to the num of trees varied
 
 for n = 1:length(T_num)   
-    figure;
     param.num = T_num(n);         % Number of trees
     diff_t{n} = growTrees(data_train,param);
 end
-
+figure;
 % test on different RF (num of trees)
 for k = 1:length(T_num)
     dense_leaves = testTrees_fast(data_test,diff_t{k});
@@ -195,14 +188,16 @@ for k = 1:length(T_num)
         p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
     end
     p_rf=p_rf_dense_sum;
-    figure;
+    subplot(2,3,k);
     confus_script
+%     str=sprintf('%d Trees RF',T_num(k));
+%     title(str)
 end
 
 
 %% the depth of trees 
 % error when running depth of 20!!!!!!!!!!!
-depth = [ 5 10 20 ]; % give a set of tree numbers to test
+depth = [ 2 5 8 10 15 50 ]; % give a set of tree numbers to test
 % Set the random forest parameters for instance, 
 param.num = 10;        % trees depth
 param.splitNum = 3;     % Number of split functions to try
@@ -211,11 +206,10 @@ param.split = 'IG';     % Currently support 'information gain' only
 % grow corresponding RF with respect to the num of trees varied
 
 for n = 1:length(depth)   
-    figure;
     param.depth = depth(n);         % Number of trees
     diff_t{n} = growTrees(data_train,param);
 end
-
+figure;
 % test on different RF (num of trees)
 for k = 1:length(depth)
     dense_leaves = testTrees_fast(data_test,diff_t{k});
@@ -224,7 +218,7 @@ for k = 1:length(depth)
         p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
     end
     p_rf=p_rf_dense_sum;
-    figure;
+    subplot(2,3,k);
     confus_script
 end
 
