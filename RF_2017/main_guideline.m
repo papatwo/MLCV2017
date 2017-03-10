@@ -40,17 +40,24 @@ scatter(data_test(:,1),data_test(:,2),'.b');
 %% Q1 create subbags
 createSubbag;
 %% Q2 split the FIRST node
-axisAlignSplitFirstNode;
+splitNum=[1 3 5 8 10 ];
+for i=1:length(splitNum)
+    param.splitNum=splitNum(i);
+    axisAlignSplitFirstNode;
+    disp('finish')
+end
+
 
 %% Q3 Grow ONE complete tree
-
+T=1;
 param.num=1;
 tree_axis=growTrees(data_train,param);
+trees = tree_axis;
 % Store class distribution in the leaf nodes.
 makeLeaf;
 % Visualise the leaf node class distribution
 figure;
-visualise_leaf
+visualise_leaf(tree_axis)
 % every time train a tree will have different number of leaf node
 
 %% linear grow one tree
@@ -96,83 +103,33 @@ param.num = 10;         % Number of trees
 param.depth = 5;        % trees depth
 param.splitNum = 3;     % Number of split functions to try
 param.split = 'IG';     % Currently support 'information gain' only
-%% the number of trees
-T_num = [5 10 20 50 100 200]; % give a set of tree numbers to test
+% the number of trees
+numTreeTest;
 
-% init;
-% % Select dataset
-% [data_train, data_test] = getData('Toy_Spiral');
+% the depth of trees
+depthTreeTest;
 
-% Axis!!!!!!!!!!!
-% grow corresponding RF with respect to the num of trees varied
-for n = 1:length(T_num)   
-    param.num = T_num(n);         % Number of trees
-    diff_tA{n} = growTrees(data_train,param);
-end
+% the num of split
+numSplitTest;
 
-% test on different RF (num of trees)
-for k = 1:length(T_num)
-    str=sprintf('%d Trees RF',T_num(k));
-    title(str)
-    subplot(2,3,k);
-    trees_axis = diff_tA{k};
-    testRF_Axis;
-end
+% grow one optimal tree for each method
+param.num = 200;         % Number of trees
+param.depth = 10;        % trees depth
+param.splitNum = 8;     % Number of split functions to try
+param.split = 'IG';
 
-% Linear!!!!!!!!!!!
-% grow corresponding RF with respect to the num of trees varied
-for n = 1:length(T_num)   
-    param.num = T_num(n);         % Number of trees
-    diff_tL{n} = growTreesLinear(data_train,param);
-end
+b_treeA = growTrees(data_train,param);
+b_treeL = growTreesLinear(data_train,param);
 
-% test on different RF (num of trees)
-for k = 1:length(T_num)
-    subplot(2,3,k);
-    str=sprintf('%d Trees RF',T_num(k));
-    title(str)
-    trees_linear = diff_tL{k};
-    testRF_Linear;
-end
-
-%% the depth of trees
-T_depth = [2 5 8 10 15 50]; % give a set of tree numbers to test
-% Set the random forest parameters for instance, 
-param.num = 10;        % trees num
-param.splitNum = 3;     % Number of split functions to try
-param.split = 'IG';     % Currently support 'information gain' only
-
-% Axis!!!!!!!!!!!
-% grow corresponding RF with respect to the num of trees varied
-for n = 1:length(T_depth)   
-    param.num = T_depth(n);         % Number of trees
-    diff_tA{n} = growTrees(data_train,param);
-end
 figure;
-% test on different RF (num of trees)
-for k = 1:length(T_depth)
-    str=sprintf('Depth %d RF',T_depth(k));
-    title(str)
-    subplot(2,3,k);
-    trees_axis = diff_tA{k};
-    testRF_Axis;
-end
+trees_axis = b_treeA;
+testRF_Axis;
 
-% Linear!!!!!!!!!!!
-% grow corresponding RF with respect to the num of trees varied
-for n = 1:length(T_depth)   
-    param.num = T_depth(n);         % Number of trees
-    diff_tL{n} = growTreesLinear(data_train,param);
-end
 figure;
-% test on different RF (num of trees)
-for k = 1:length(T_depth)
-    str=sprintf('Depth %d RF',T_depth(k));
-    title(str)
-    subplot(2,3,k);
-    trees_linear = diff_tL{k};
-    testRF_Linear;
-end
+trees_linear = b_treeL;
+testRF_Linear;
+
+
 
 %%
 

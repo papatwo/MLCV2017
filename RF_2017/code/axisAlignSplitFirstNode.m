@@ -3,7 +3,7 @@ bestig= -100;
 iter = param.splitNum;
 data_train = bag{1,1}; % use one subbag to split one tree
 for n = 1:iter
-    visualise = 0;
+    visualise = 1;
     % axis-aligned split function:
     dim = randi(D-1); % Pick one random dimension -- pick x-axis or y-axis
     d_min = single(min(data_train(:,dim))) + eps; % Find the data range of this dimension
@@ -33,8 +33,8 @@ for n = 1:iter
     if visualise
         visualise_splitfuncTest(idx_,data_train,dim,t,ig,0);
         pause();
-    end    
+    end  
 end
-
-figure; % visualise the best split
+disp('showing best')
+% figure; % visualise the best split
 visualise_splitfuncTest(idx_best,data_train,dim_best,t_best,bestig,0);

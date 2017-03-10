@@ -1,5 +1,6 @@
 % Test on the dense 2D grid data, and visualise the results ... 
 dense_leaves = testTrees_fast(data_test,trees_axis);
+dense_leaves(dense_leaves==0)=1;
 % Get the probability of each data_test point from all TEN trees
 for L = 1:length(data_test(:,1))
    p_rf_dense = trees_axis(1).prob(dense_leaves(L,:),:); 
