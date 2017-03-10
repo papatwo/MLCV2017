@@ -29,13 +29,15 @@ for n = 1:iter
         % linear split function
 
         r1= randi(D-1); %class number
-        %r2= randi(D-1); %class number
-        w= randn(2, 1); %
-        idx_ = [data(:, r1), ones(N, 1)]*w < 0;
+        r2= randi(D-1); %class number
+        w= randn(3, 1); %
+        t=w;
+        dim=[r1,r2];
+        idx_ = [data(:, [r1 r2]), ones(N, 1)]*w < 0;
         ig = getIG(data,idx_);
 
     
-    [node, ig_best, idx_best] = updateIG(node,ig_best,ig,w,idx_,r1,idx_best);    
+    [node, ig_best, idx_best] = updateIG(node,ig_best,ig,t,idx_,dim,idx_best);    
 end
 
 nodeL.idx = idx(idx_best);
@@ -44,6 +46,7 @@ nodeR.idx = idx(~idx_best);
 end
 
 function ig = getIG(data,idx) % Information Gain - the 'purity' of data labels in both child nodes after split. The higher the purer.
+data=data(:,end);
 L = data(idx);
 R = data(~idx);
 H = getE(data);

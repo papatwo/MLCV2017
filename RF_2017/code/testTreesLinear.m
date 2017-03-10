@@ -1,6 +1,6 @@
 function label = testTreesLinear(data,tree)
 % Slow version - pass data point one-by-one
-
+[N,D]=size(data);
 cc = [];
 for T = 1:length(tree)
     for m = 1:size(data,1)
