@@ -42,57 +42,10 @@ createSubbag;
 %% Q2 split the FIRST node
 axisAlignSplitFirstNode;
 
-%% CHANGE SPLIT FUNCTION???
-
-for i=1:10
-% splitting the first node
-bestig= -100;
-iter = param.splitNum;
-data = bag{1,1}; % use one subbag to split one tree
-[N,D]=size(data);
-for n = 1:iter
-    visualise = 0;
-    % axis-aligned split function:
-    r1 = randi(D-1);
-    r2 = randi(D-1); % Pick one random dimension -- pick x-axis or y-axis
-    w= randn(3, 1); %
-    idx_ = [data(:, [r1 r2]), ones(N, 1)]*w < 0; 
-    dim = [r1 r2];
-    t = w;
-    l_data = data_train(idx_,:); % data go LEFT branch
-    r_data = data_train(~idx_,:); % data go RIGHT branch
-    
-    ig = getIG(data_train, idx_);
-    
-    if bestig < ig
-        bestig = ig;
-        t_best = t;
-        dim_best = dim;
-        idx_best = idx_;
-    end
-    
-%     if visualise
-%         visualise_splitfunc(idx_,data_train,dim,t,bestig,0);
-%         pause();
-%     end    
-end
-
-figure; % visualise the best split
-visualise_splitfuncTest(idx_best,data_train,dim_best,t_best,bestig,0);
-end
 %% Q3 Grow ONE complete tree
-% for growing 1 tree first, reset the param
-% T = 1;
-% idx=1:length(bag{1}); 
-% trees(T).node(1) = struct('idx',idx,'t',nan,'dim',-1,'prob',[]);
-% 
-% % Split Nodes
-% for n = 1:2^(param.depth-1)-1
-%     [trees(T).node(n),trees(T).node(n*2),trees(T).node(n*2+1)] = splitNode(data_train,trees(T).node(n),param);
-% end
 
 param.num=1;
-trees=growTrees(data_train,param);
+tree_axis=growTrees(data_train,param);
 % Store class distribution in the leaf nodes.
 makeLeaf;
 % Visualise the leaf node class distribution
@@ -101,16 +54,9 @@ visualise_leaf
 % every time train a tree will have different number of leaf node
 
 %% linear grow one tree
-% T = 1;
-% idx=1:length(bag{1}); 
-% trees(T).node(1) = struct('idx',idx,'t',nan,'dim',-1,'prob',[]);
-% 
-% % Split Nodes
-% for n = 1:2^(param.depth-1)-1
-%     [trees(T).node(n),trees(T).node(n*2),trees(T).node(n*2+1)] = splitNodeLinear(data_train,trees(T).node(n),param);
-% end
+T = 1;
 param.num=1;
-trees=growTreesLinear(data_train,param);
+tree_linear=growTreesLinear(data_train,param);
 % Store class distribution in the leaf nodes.
 makeLeaf;
 % Visualise the leaf node class distribution
@@ -118,131 +64,114 @@ figure;
 visualise_leaf
 
 %% Q4 Grow all 10 trees
+% axis-aligned
 param.num=10;
-
 trees_axis = growTrees(data_train,param); 
-
+% linear
+param.num=10;
 trees_linear=growTreesLinear(data_train,param);
-% growTree is currently using linear split 3.9 16:41
+
 %% Q5 Testing data points
-%%%%%%%%%%%%%%%%%%%%%%
-% Evaluate/Test Random Forest
+% Evaluate/Test Random Forest grab the few data points and evaluate them
+% one by one by the leant RF
+
+% axis-aligned
 pointTestTreeAxis;
-
-%%
-% grab the few data points and evaluate them one by one by the leant RF
-test_point = [-.5 -.7; .4 .3; -.7 .4; .5 -.5];
-figure;plot_toydata(data_train);
-plot(test_point(:,1), test_point(:,2), 's', 'MarkerSize',20, 'MarkerFaceColor', [.9 .9 .9], 'MarkerEdgeColor','k');
-title('Visualisation of Test Points');
-
-for n=1:length(test_point)%4 % how to get all 22801 test point prob
-    leaves = testTreesLinear([test_point(n,:) 0],trees_linear);
-    % average the class distributions of leaf nodes of all trees
-    p_rf = trees_linear(1).prob(leaves,:);
-    p_rf_sum(n,:) = mean(p_rf,1);
-    figure;
-    for p = 1:length(leaves) % visualise the leaf class distribution of all ten trees
-        subplot(2,5,p);bar(p_rf(p,:));
-        title(sprintf('Tree %d leaf',p))
-    end  
-end
-
-figure;plot_toydata(data_train);
-hold on
-plot(test_point(1,1), test_point(1,2), 's', 'MarkerSize',20, 'MarkerFaceColor', [.9 .5 .5], 'MarkerEdgeColor','k');
-plot(test_point(2,1), test_point(2,2), 's', 'MarkerSize',20, 'MarkerFaceColor', [.5 .9 .5], 'MarkerEdgeColor','k');
-plot(test_point(3,1), test_point(3,2), 's', 'MarkerSize',20, 'MarkerFaceColor', [.5 .5 .9], 'MarkerEdgeColor','k');
-plot(test_point(4,1), test_point(4,2), 's', 'MarkerSize',20, 'MarkerFaceColor', [.9 .5 .5], 'MarkerEdgeColor','k');
-title('Four Test Points Class Labels')
-
-figure; 
-for j = 1:4
-    subplot(2,2,j);bar(p_rf_sum(j,:));
-    title(sprintf('Final prediction of Point %d',j))
-end
-
-
+% linear
+pointTestTreeLinear;
 
 %% Q6 Test on the data_test
-% Test on the dense 2D grid data, and visualise the results ... 
-dense_leaves = testTrees_fastLinear(data_test,trees_linear);
 
-% Get the probability of each data_test point from all TEN trees
-for L = 1:length(data_test(:,1))
-   p_rf_dense = trees(1).prob(dense_leaves(L,:),:); 
-   p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
-end
+% axis-aligned
+testRF_Axis;
 
-% Visualise the 
-fig = visualise(data_train,p_rf_dense_sum,[],0);
-title('Visualise of Test Data Classification with Colour Encoded')
-
-
-
-
-
-
- 
-
+% linear
+testRF_Linear;
 
 %% % Change the RF parameter values and evaluate ...
 %Q7 Try different parameters of RF and see the effects
-%% the number of trees
-T_num = [1 5 10 20 50]; % give a set of tree numbers to test
 
-init;
-% Select dataset
-[data_train, data_test] = getData('Toy_Spiral');
-
-% Set the random forest parameters for instance, 
+% Set the random forest parameters by default 
+param.num = 10;         % Number of trees
 param.depth = 5;        % trees depth
 param.splitNum = 3;     % Number of split functions to try
 param.split = 'IG';     % Currently support 'information gain' only
+%% the number of trees
+T_num = [5 10 20 50 100 200]; % give a set of tree numbers to test
 
+% init;
+% % Select dataset
+% [data_train, data_test] = getData('Toy_Spiral');
+
+% Axis!!!!!!!!!!!
 % grow corresponding RF with respect to the num of trees varied
 for n = 1:length(T_num)   
     param.num = T_num(n);         % Number of trees
-    diff_t{n} = growTrees(data_train,param);
+    diff_tA{n} = growTrees(data_train,param);
 end
 
 % test on different RF (num of trees)
 for k = 1:length(T_num)
-    dense_leaves = testTrees_fast(data_test,diff_t{k});
-    for L = 1:length(data_test)
-        p_rf_dense = diff_t{k}(1).prob(dense_leaves(L,:),:);
-        p_rf_dense_sum(L,:) = mean(p_rf_dense);
-    end
-    fig = visualise(data_train,p_rf_dense_sum,[],0);
-    title(sprintf('Visualise of Test Data Classification of %d Trees',T_num(k)))
+    str=sprintf('%d Trees RF',T_num(k));
+    title(str)
+    subplot(2,3,k);
+    trees_axis = diff_tA{k};
+    testRF_Axis;
+end
+
+% Linear!!!!!!!!!!!
+% grow corresponding RF with respect to the num of trees varied
+for n = 1:length(T_num)   
+    param.num = T_num(n);         % Number of trees
+    diff_tL{n} = growTreesLinear(data_train,param);
+end
+
+% test on different RF (num of trees)
+for k = 1:length(T_num)
+    subplot(2,3,k);
+    str=sprintf('%d Trees RF',T_num(k));
+    title(str)
+    trees_linear = diff_tL{k};
+    testRF_Linear;
 end
 
 %% the depth of trees
-init;
-% Select dataset
-[data_train, data_test] = getData('Toy_Spiral');
-
-T_depth = [10 15]; % give a set of tree numbers to test
+T_depth = [2 5 8 10 15 50]; % give a set of tree numbers to test
 % Set the random forest parameters for instance, 
 param.num = 10;        % trees num
 param.splitNum = 3;     % Number of split functions to try
 param.split = 'IG';     % Currently support 'information gain' only
 
+% Axis!!!!!!!!!!!
 % grow corresponding RF with respect to the num of trees varied
 for n = 1:length(T_depth)   
-    param.depth = T_depth(n);         % Number of trees
-    diff_t{n} = growTrees(data_train,param);
+    param.num = T_depth(n);         % Number of trees
+    diff_tA{n} = growTrees(data_train,param);
 end
-
+figure;
 % test on different RF (num of trees)
 for k = 1:length(T_depth)
-    dense_leaves = testTrees_fast(data_test,diff_t{k});
-    for L = 1:length(data_test)
-        p_rf_dense = diff_t{k}(1).prob(dense_leaves(L,:),:);
-        p_rf_dense_sum(L,:) = sum(p_rf_dense)/length(diff_t{k});
-    end
-    fig = visualise(data_train,p_rf_dense_sum,[],0);
-    title(sprintf('Visualise of Test Data Classification of depth %d',T_depth(k)))
+    str=sprintf('Depth %d RF',T_depth(k));
+    title(str)
+    subplot(2,3,k);
+    trees_axis = diff_tA{k};
+    testRF_Axis;
+end
+
+% Linear!!!!!!!!!!!
+% grow corresponding RF with respect to the num of trees varied
+for n = 1:length(T_depth)   
+    param.num = T_depth(n);         % Number of trees
+    diff_tL{n} = growTreesLinear(data_train,param);
+end
+figure;
+% test on different RF (num of trees)
+for k = 1:length(T_depth)
+    str=sprintf('Depth %d RF',T_depth(k));
+    title(str)
+    subplot(2,3,k);
+    trees_linear = diff_tL{k};
+    testRF_Linear;
 end
 
 %%
