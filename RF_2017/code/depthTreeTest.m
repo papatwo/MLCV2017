@@ -1,4 +1,4 @@
-T_depth = [2 5 8 10 15 50]; % give a set of tree numbers to test
+T_depth = [2 5 8 10 15]; % give a set of tree numbers to test
 % Set the random forest parameters for instance, 
 param.num = 10;        % trees num
 param.splitNum = 3;     % Number of split functions to try

@@ -104,7 +104,7 @@ data_train = zeros(num_img*num_class,length(codebook(1).prob)+1);
        data_query = zeros(num_class*num_img, length(codebook(1).prob)+1);
     for i = 1:num_class  
         for k=1:num_img
-            dense_leaves = testTrees_fast(desc_tr{i,k}',codebook);
+            dense_leaves = testTrees_fast(desc_te{i,k}',codebook);
             for c=1:length(codebook(1).prob) % num of nodes in this tree
                 data_query(15*(i-1)+k,c)= length(find(dense_leaves==c));            
             end

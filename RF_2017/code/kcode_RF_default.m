@@ -18,5 +18,5 @@ end
 % title('Visualise of Test Data Classification with Colour Encoded')
 % show accuracy and confusion matrix ...
 p_rf=p_rf_dense_sum;
-figure;
+% figure;
 confus_script
