@@ -130,6 +130,37 @@ subplot(2,2,3)
 plot(numD,accD,'*-b');
 subplot(2,2,4);
 plot(numS,accS,'*-b');
+%% Best kmeans codebook tree
+param.num = 200;         % Number of trees
+param.depth = 10;        % trees depth
+param.splitNum = 50;     % Number of split functions to try
+param.split = 'IG';
+% Train Random Forest ...
+figure;
+ for i=1:5
+tic
+trees = growTrees(data_train,param);
+train_t=toc;
+% Evaluate/Test Random Forest ...
+% dense_leaves = testTrees_fastLinear([data_train(:,1:end-1),zeros(size(data_test,1),1)],trees); 
+
+dense_leaves = testTrees_fast([data_test(:,1:end-1),zeros(size(data_test,1),1)],trees); 
+dense_leaves(dense_leaves==0)=1;
+% Get the probability of each data_test point from all TEN trees
+tic
+for L = 1:length(data_test(:,1))
+   p_rf_dense = trees(1).prob(dense_leaves(L,:),:); 
+   p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
+end
+test_t=toc;
+% Visualise the 
+% fig = visualise(data_train,p_rf_dense_sum,[],0);
+% title('Visualise of Test Data Classification with Colour Encoded')
+% show accuracy and confusion matrix ...
+p_rf=p_rf_dense_sum;
+subplot(2,3,i)
+confus_script
+ end
 %%
 clearvars -except data_test data_train Type
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
