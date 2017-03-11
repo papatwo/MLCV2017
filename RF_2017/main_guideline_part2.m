@@ -101,9 +101,20 @@ confus_script
 
 % tried different vocab size used for RF codebook and testing by the
 % best settings obtained from q32 to see the effects on accuracy
-
-%%
-
+figure;
+subplot(2,2,1);plot([32 76 125 231],[0.613 0.667 0.68 0.653],'*-b')
+subplot(2,2,2);plot([3 5 10 20 50],[0.66 0.727 0.687 0.633 0.58],'*-b')
+subplot(2,2,3);plot([3 5 10 15],[0.52 0.687 0.687 0.653],'*-b')
+%% RF CLASSIFIER param tuning
+[rf_data_train, rf_data_test,booktime,codebook]=rf_code('Caltech'); %currently is the best RF param for codebook
+data_train=rf_data_train;
+data_test=rf_data_test;
+kcode_RF_default;
+title('RF codebook Classifier Test')
+%% the number of trees
+kcode_RF_numTree;
+accT=mean(accuracy,2)';
+numT=[5 10 20 50 100 200 300];
 %%
 clearvars -except data_test data_train Type
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

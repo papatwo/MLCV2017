@@ -53,7 +53,7 @@ for i = 1:size(desc_tr,1) % for all 10 classes
 end
 tic
 param.num = 8;
-param.depth = 10;        % trees depth
+param.depth = 5;        % trees depth
 param.splitNum = 5;     % Number of split functions to try
 param.split = 'IG';
 desc_sel_tr = single(desc_sel);
