@@ -1,4 +1,4 @@
-function [ data_train,data_query ] = rf_code( MODE )
+function [ data_train,data_query, booktime, codebook ] = rf_code( MODE )
 PHOW_Sizes = [4 8 10]; % Multi-resolution, these values determine the scale of each layer.
 PHOW_Step = 8; % The lower the denser. Select from {2,4,8,16}
 
@@ -51,14 +51,14 @@ for i = 1:size(desc_tr,1) % for all 10 classes
     desc_ = [desc_label(idx,:) i*ones(10000,1)]; % add class labels to the selected SIFT
     desc_sel = [desc_sel ; desc_]; % concatenate all selected classes together
 end
-
-param.num = 10;
-param.depth = 5;        % trees depth
-param.splitNum = 3;     % Number of split functions to try
+tic
+param.num = 8;
+param.depth = 10;        % trees depth
+param.splitNum = 5;     % Number of split functions to try
 param.split = 'IG';
 desc_sel_tr = single(desc_sel);
 codebook = growTrees(desc_sel_tr,param); 
-
+booktime=toc;
 
 % Vector Quantisation -- get data_train
 
@@ -66,6 +66,7 @@ data_train = zeros(num_img*num_class,length(codebook(1).prob)+1);
     for i = 1:num_class  
         for k=1:num_img
             dense_leaves = testTrees_fast(desc_tr{i,k}',codebook);
+            dense_leaves(dense_leaves==0)=1;
             for c=1:length(codebook(1).prob) % num of nodes in this tree
                 data_train(15*(i-1)+k,c)= length(find(dense_leaves==c));            
             end
