@@ -29,7 +29,7 @@ numD = [2 5 8 10 15];
 %% number of split
 kcode_RF_splitNum;
 accS=mean(accuracy,2)';
-numS=[3 5 8 10 15 20]; % for plotting
+numS=[3 5 8 10 15 20 ]; % for plotting
 
 subplot(2,2,2)
 plot(numT,accT,'*-b');
@@ -115,6 +115,21 @@ title('RF codebook Classifier Test')
 kcode_RF_numTree;
 accT=mean(accuracy,2)';
 numT=[5 10 20 50 100 200 300];
+%% the depth of trees 
+kcode_RF_depth;
+accD=  [0.2467 0.4267 0.4067 0.46 0.4467]; % tested on uni PC as laptop nor powerful enough
+numD = [2 5 8 10 15];
+%% number of split
+kcode_RF_splitNum;
+accS=mean(accuracy,2)';
+numS=[3 5 8 10 15 20 ]; % for plotting
+
+subplot(2,2,2)
+plot(numT,accT,'*-b');
+subplot(2,2,3)
+plot(numD,accD,'*-b');
+subplot(2,2,4);
+plot(numS,accS,'*-b');
 %%
 clearvars -except data_test data_train Type
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
