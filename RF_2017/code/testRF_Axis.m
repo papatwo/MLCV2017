@@ -7,9 +7,9 @@ for L = 1:length(data_test(:,1))
    p_rf_dense_sum(L,:) = mean(p_rf_dense,1);
 end
 
-% % Visualise the 
-% fig = visualise(data_train,p_rf_dense_sum,[],0);
-% title('Visualise of Test Data Classification with Colour Encoded')
+
+% Visualise the 
+visualise(data_train,p_rf_dense_sum,[],0);
 
 c1=[];c2=[];c3=[];
 for i=1:length(p_rf_dense_sum)
@@ -22,8 +22,8 @@ for i=1:length(p_rf_dense_sum)
          c3=[c3 i];
      end
 end
-plot_toydata(data_train);
-scatter(data_test(c1,1),data_test(c1,2),'.r');
-scatter(data_test(c2,1),data_test(c2,2),'.g');
-scatter(data_test(c3,1),data_test(c3,2),'.b');
-plot_toydata(data_train);
+% plot_toydata(data_train);
+% scatter(data_test(c1,1),data_test(c1,2),'.r');
+% scatter(data_test(c2,1),data_test(c2,2),'.g');
+% scatter(data_test(c3,1),data_test(c3,2),'.b');
+% plot_toydata(data_train);

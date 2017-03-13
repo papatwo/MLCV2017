@@ -9,6 +9,9 @@ T_num = [5 10 20 50 100 200]; % give a set of tree numbers to test
 for n = 1:length(T_num)   
     param.num = T_num(n);         % Number of trees
     diff_tA{n} = growTrees(data_train,param);
+    trees_axis = diff_tA{n};
+    testRF_Axis;
+    title(sprintf('%d trees',T_num(n)))
 end
 
 % test on different RF (num of trees)

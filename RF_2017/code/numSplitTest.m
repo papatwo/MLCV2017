@@ -9,6 +9,9 @@ param.split = 'IG';     % Currently support 'information gain' only
 for n = 1:length(splitNum)   
     param.num = splitNum(n);         % Number of trees
     diff_tA{n} = growTrees(data_train,param);
+    trees_axis = diff_tA{n};
+    testRF_Axis;
+    title(sprintf('%d trees',splitNum(n)))
 end
 figure;
 % test on different RF (num of trees)
