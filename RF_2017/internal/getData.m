@@ -128,7 +128,7 @@ switch MODE
         % codebook: independent features (a representative of similar patches)
         desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
         
-        numBins = 64; % 256 feature??? 
+        numBins = 64; % 64 feature 
         tic;
         book = kmeans(desc_sel, numBins); % construct visual codebook (256 clusters)
         booktime=toc;
@@ -206,8 +206,6 @@ switch MODE
         % Quantisation
         k = 1; figure('Units','normalized','Position',[.5 .1 .4 .9]);
         suptitle('Testing image representations: 256-D histograms')
-%         l = 1;
-%         m = 1;
         [ num_class, num_img ] = size(desc_te); 
        data_query = zeros(num_class*num_img, numBins+1);
         for i = 1:num_class %  Number of classes in the training set
