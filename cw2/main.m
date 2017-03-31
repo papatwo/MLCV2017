@@ -85,12 +85,19 @@ hold on;plot(c,r,'ys') % c-xaxis; r-yaixs find 69 interst points
 % b) calculate local feature descriptor from interest points
 
 % Get image gradient magnitudes and directions at each pixel
-% Convert gradient directions into corresponding bin from the 8 bins (0:45:360)
-% For each interest point, iterate over each cell in 4x4 grid. For each cell, extract subarray of gradient magnitudes and directions. Calculate bin count weighted by gradient magnitudes for each cell. Concatente and normalize to get features for interest point
-% Return descriptors for each interest point
+
+%  Convert gradient directions into corresponding bin from the 8 bins
+%  (0:45:360)
+
+% For each interest point, iterate over each cell in 3x3 grid (??? change
+% to 32x32). For each cell, extract subarray of gradient magnitudes and
+% directions. Calculate bin count weighted by gradient magnitudes for each
+% cell. Concatente and normalize to get features for interest point
+
+%  Return descriptors for each interest point
 
 % As in coordinate convention: c-x, r-y
-features = zeros(length(x),128); % 128 dimensions or 121???
+features = zeros(length(c),128); % 128 dimensions or 121???
 
 % zero-pad image
 img_pad = padarray(img,[6/2 6/2],'symmetric');
@@ -98,8 +105,29 @@ img_pad = padarray(img,[6/2 6/2],'symmetric');
 
 % Convert gradient direction into 8 bins
 Gdir = Gdir + 180;
-B=floor(Gdir/45)+1;
+Gdir_bin = floor(Gdir/45)+1;
 
+% iterate over each cell in 3x3 grid.
+for i = 1:length(c) % the n-th interest point
+    cnt = 0;
+    for cellx_start = r(i) : 6 / 3 : r(i)+6 -1 % each cell in 4x4 grid
+        cellx_end = r(i)+6/3-1;
+        for celly_start = c(i) : 6 / 3 : c(i) + 6 - 1 % each cell in 4x4 grid
+            celly_end = c(i)+6/3-1;
+            % extract magnitude and direction bin submatrices
+            cell_Gmag = reshape(Gmag(celly_start:celly_end, cellx_start:cellx_end),[],1);
+            cell_Gdir = reshape(Gdir_bin(celly_start:celly_end, cellx_start:cellx_end),[],1);
+            % Compute features for each cell in grid
+            for k = 1:length(cell_Gdir)
+                idx = cnt*8+cell_Gdir(k);
+                % Increments weigthed by gradient magnitude
+                features(i, idx) = features(i, idx)+cell_Gmag(k); % prevent normalisation to be NaN
+            end
+            cnt=cnt+1;
+        end         
+    end
+    features(i,:)=features(i,:)/norm(features(i,:));
+end
 
 
 
