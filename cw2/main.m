@@ -129,5 +129,19 @@ for i = 1:length(c) % the n-th interest point
     features(i,:)=features(i,:)/norm(features(i,:));
 end
 
+%% 
+% c) NN matching between descriptors from two different images
+
+% For each interest point, get ratio of distance of the nearest neighbor to
+% the point to the distance of the next nearest neighbor to the point. This
+% involves computing the distance to the two nearest neighbors. We use the
+% kd-tree implementation in Matlab to compute these distance for faster
+% computation.
+
+% Sort nearest neighbors in ascending order according to value of Lowe's ratio
+
+% Return best match for each interest point along with confidences in order
+% from most confident to least confident
+
 
 
