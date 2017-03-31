@@ -7,7 +7,7 @@ if size(img)>2 % or selecting ONE colour channel
     img = rgb2gray(img);
 end
 blurMask=[0.03 0.105 0.222 0.286 0.222 0.105 0.03];
-img = conv2(img, blurMask, 'same');
+
 %[X1,Y1] = ginput(5); % get interest points in imgA
 % [X2,Y2] = ginput(5); % get interest points in imgB
 
@@ -58,4 +58,4 @@ order = 2*radius +1;
 mx = ordfilt2(R, 3^2,ones(3));
 output = (R==mx)&(R>threshold);
 [r, c]=find(output);
-figure; imshow(img);hold on;plot(c,r,'ys') % c-xaxis; r-yaixs 
+figure; imshow(img);hold on;plot(c,r,'ys')
