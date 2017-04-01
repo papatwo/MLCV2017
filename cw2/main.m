@@ -143,5 +143,6 @@ end
 % Return best match for each interest point along with confidences in order
 % from most confident to least confident
 
-
+matches = zeros(size(features, 1), 2);
+matches(:, 1) = 1:size(features, 1); 
 
