@@ -1,7 +1,9 @@
 %% Q1. Matching
-close all; clear all
+% close all; clear all
 % 1) Manual
 img = im2double(imread('images.jpg'));
+% img = im2double(imread('test1.png'));
+% img = im2double(imread('test2.png'));
 imshow(img);
 if size(img)>2 % or selecting ONE colour channel
     img = rgb2gray(img);
