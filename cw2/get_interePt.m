@@ -57,7 +57,8 @@ Sxy = imfilter(Ixy, h);
  % !!!!!! two ways to calculate Harris measure, which one to use???
 alpha = 0.04;
 R = (Sx2.*Sy2 - Sxy.^2)-alpha*(Sx2 + Sy2).^2;
-threshold = 1.5; %0.5*graythresh(R);
+threshold = 1.5; % get this value by assessing max and min of R
+%0.5*graythresh(R);
 
 % Remove low gardients, graythresh makes the threshold adapt to image
 highR = R>threshold;
