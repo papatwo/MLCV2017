@@ -60,9 +60,9 @@ for i = 1:length(c) % the n-th interest point
         vector(ind(s),t) = features(ind(s),t)+cell_Gmag(s,t); % every count on a particular bin add the mag
        end
     end
-    revector = reshape(vector,[1 128]);
-    revector = revector / norm(revector);
-    features(i,:) = revector;
+    revector = reshape(vector,[1 128]); % expand the 128 features at this point
+    revector = revector / norm(revector); 
+    features(i,:) = revector; % concatenate with the summary feature matrix
 end    
     
 %     for k = 1:4

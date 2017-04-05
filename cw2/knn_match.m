@@ -11,10 +11,10 @@ for i = 1:size(featureA,1)
     [dist_sort, idx_sort] = sort(dist(i,:), 'ascend'); 
     % Nearest Neighbor Distance Ratio Test
     ratio = dist_sort(1)/dist_sort(2);
-    if ratio < threshold
-        match(k,1) = i;
-        match(k,2) = idx_sort(1);
-        confidence(k) = ratio;
+    if ratio < threshold % find threshold by assessing max and min value of ratio
+        match(k,1) = i; % match point for img A
+        match(k,2) = idx_sort(1); % match point for img B
+        confidence(k) = ratio; 
         k = k+1;
     end
 end
