@@ -6,12 +6,12 @@ function intere_pt = get_interePt(img, patch_size)
 img = im2double(imread(img));
 % img = im2double(imread('test1.png'));
 % img = im2double(imread('test2.png'));
-imshow(img);
-if size(img)>2 % or selecting ONE colour channel
+% imshow(img);
+if size(size(img),2)>2 % or selecting ONE colour channel
     img = rgb2gray(img);
 end
 blurMask=[0.03 0.105 0.222 0.286 0.222 0.105 0.03];
-img = conv2(img, blurMask, 'same');
+% img = conv2(img, blurMask, 'same');
 %[X1,Y1] = ginput(5); % get interest points in imgA
 % [X2,Y2] = ginput(5); % get interest points in imgB
 
@@ -29,7 +29,8 @@ Iy2 = Iy.^2;
 Ixy = Ix.*Iy;
 
 %applying gaussian filter on the computed value (window thing)
-h = fspecial('gaussian',max(1, fix(6*sigma)),sigma);
+% h = fspecial('gaussian',max(1, fix(6*sigma)),sigma);
+h = blurMask;
 Sx2 = imfilter(Ix2, h);
 Sy2 = imfilter(Iy2, h);
 Sxy = imfilter(Ixy, h);
@@ -56,7 +57,7 @@ Sxy = imfilter(Ixy, h);
  % !!!!!! two ways to calculate Harris measure, which one to use???
 alpha = 0.04;
 R = (Sx2.*Sy2 - Sxy.^2)-alpha*(Sx2 + Sy2).^2;
-threshold = 0.005*graythresh(R);
+threshold = 1.5; %0.5*graythresh(R);
 
 % Remove low gardients, graythresh makes the threshold adapt to image
 highR = R>threshold;
