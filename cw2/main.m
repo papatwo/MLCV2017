@@ -5,8 +5,8 @@ img = im2double(imread('images.jpg'));
 % img = im2double(imread('test1.png'));
 % img = im2double(imread('test2.png'));
 imshow(img);
-[X1,Y1] = ginput(5); % get interest points in imgA
-[X2,Y2] = ginput(5); % get interest points in imgB
+[X1,Y1] = ginput(8); % get interest points in imgA
+[X2,Y2] = ginput(8); % get interest points in imgB
 %% 2) Automatic
 % a) Harris points detector
 %
@@ -97,6 +97,8 @@ corre = corre./corre(end); % norm the points vector
 %% 
 % b) fundamental matrix
 load stereoPointPairs % for test convenience
+
+%   input points for get H should be 2xN
 [F,e1,e2] = get_fMatrix(matchedPoints1,matchedPoints2);
 % % by using builtin
 % F1 = estimateFundamentalMatrix(matchedPoints1,matchedPoints2);
@@ -105,23 +107,59 @@ load stereoPointPairs % for test convenience
 % c) projecting from imgB to A via homography.
 %   calculate avg dist in pixels between these two mapped points
 %   input points for get H should be Nx3
-%   input points for 
 if size(matchedPoints1,2)<3
     H = homography2d([matchedPoints1(1:4,:) ones(4,1)]', [matchedPoints2(1:4,:) ones(4,1)]');
-else
-    
-    
 end
+
+% for testing accuracy, find another set of match points
 proj_ptB = [];
-for i = 1:size(matchedPoints1,1)
-    ptA = [matchedPoints1(i,:) 1];
+testPoints1=!!!;
+testPoints2=!!!;
+for i = 1:size(testPoints1,1)
+    ptA = [testPoints1(i,:) 1];
     proj = H * ptA';
-    proj = proj./proj(end);
+%     proj = proj./proj(end);
     proj(end)=[];
     proj = proj';
     proj_ptB = [proj_ptB; proj];
 end
+HA = sum(proj_ptB - testPoints2);
 
+% MAYBE another way test
+h11=H(1,1);h12=H(1,2);h13=H(1,3);
+h31=H(3,1);h32=H(3,2);
+x2pr=(h11*matchedPoints1(1,1)+h12*matchedPoints1(1,2)+h13)...
+    /(h31*matchedPoints1(1,1)+h32*matchedPoints1(1,2)+1);
 HA = sum(proj_ptB - matchedPoints2);
 
+%%
+% d) calculate epipolar line given point coor and a F
+img = im2double(imread('img1.pgm'));
+imshow(img);hold on;plot(X1,Y1,'ys');
 
+img2 = im2double(imread('img2.pgm'));
+figure;imshow(img2);hold on;plot(X2,Y2,'ys');
+
+% Step through each matched pair of points and display the
+% corresponding epipolar lines on the two images.
+
+% x2'*F*x1 = 0 by fixing xy coor in x1 vector
+% x2'* 3x1constant = 0;
+const = Ft*[X1(1);Y1(1);1]; % epiline eq in img2
+for i = 1:size(X1)
+    l2 = F*[X1(i) Y1(i) 1];    % Epipolar lines in image2: projection from imgA to B]'
+    l1 = F'*x2;   % Epipolar lines in image1: projection from imgB to A
+end
+
+
+epline=epipolarLine(F',[X1 Y1])
+points=lineToBorderPoints(epline,size(img))
+figure(1);hold on;line(points(:,[1,3])',points(:,[2,4])')
+epline2=epipolarLine(F',[X2 Y2])
+points2=lineToBorderPoints(epline,size(img2))
+figure(2);hold on;line(points2(:,[1,3])',points2(:,[2,4])')
+
+%%
+% Q2 Image Geometry
+% 1) Homography
+% a) 
