@@ -130,3 +130,36 @@ for i = 1:length(c) % the n-th interest point
     end
     features(i,:)=features(i,:)/norm(features(i,:));
 end
+%%
+% a) homography matrix
+
+% Assume we have two images '1' and '2' and four feature pairs:
+% (p1 is the reference image)
+% corre1 is a 2*n matrix. Each row is the coordinates of a point in '1'
+% corre2 is a 2*n matrix. Each row is the coordinates of a point in '2'
+% H is the homography matrix, such that:
+% corre1_homogeneous = H * [corre2 ones(size(corre2, 1), 1)]'
+n = size(corre1, 2);
+if n < 3
+ error('Not enough points');
+end 
+
+% the original transformation formula is:
+% img2 = h*img1 where H is 3x3 matrix
+% for the convenience of calculation expand H into col vector and reshape X
+% after reshape and expand : x = X*H where H is 9x1 vector
+
+X = zeros(n*3,9); % reshape of img1 denoted as X
+x = zeros(n*3,1); % corresponding pt in img2 denoted as x
+for i=1:n 
+ X(3*(i-1)+1,1:3) = [corre2(:,i)',1];
+ X(3*(i-1)+2,4:6) = [corre2(:,i)',1];
+ X(3*(i-1)+3,7:9) = [corre2(:,i)',1];
+ x(3*(i-1)+1:3*(i-1)+3) = [corre1(:,i);1];
+end
+H = (X\x)'; % obtained from x = X*H
+H = reshape(H,3,3)';
+% for transformation test:
+i = 1; % change this number to any point you want to test
+corre = H*[corre1(:,i);1];
+

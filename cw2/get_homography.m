@@ -13,11 +13,8 @@ for i = 1:n % for loop to create A matrix where Ah=0
     A(2*i,:) = [0,0,0,corre1(:,i)',1,-corre1(:,i)'.*corre2(2,i),-corre2(2,i) ];
 end
 
-if n==4 % there are right no. equations to solve 8 unknows in H
-    H = null(A);
-    H = reshape(H(:,end),[3,3]);
-elseif n>4
-    [~,~,V] = svd(A);
+if n>=4 % there are right no. equations to solve 8 unknows in H
+    [~,~,V] = svd(A,0);
     H = reshape(V(:,end),[3 3])';
 else
     error('Not enough points');
