@@ -352,7 +352,17 @@ end
 
 %%
 % c) calculate disparity map
-disparityMap = disparity(imgA,imgB);
-
+imgA = imread('scene1.row3.col1.ppm');
+imgB = imread('scene1.row3.col2.ppm');
+disparityRange = [-6 10];
+disparityMap = disparity(rgb2gray(imgA),rgb2gray(imgB),'BlockSize',...
+    15,'DisparityRange',disparityRange);
+figure
+imshow(disparityMap,disparityRange);
+title('Disparity Map');
+colormap jet
+colorbar
 %%
 % d) calculate and display depth map
+ disparityMap(abs(disparityMap)>100)=0;
+ figure;surf(disparityMap,'FaceColor','texturemap','EdgeColor','none');

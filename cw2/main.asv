@@ -336,8 +336,8 @@ pt_1 = matchedPoints1.selectStrongest(8);
 pt_2 = matchedPoints2.selectStrongest(8);
 figure;imshow(imgA);hold on; plot(pt_1);
 figure;imshow(imgB);hold on; plot(pt_2);
-pt_1 = pt_1.Location';
-pt_2 = pt_2.Location';
+pt_1 = [(pt_1.Location)';ones(1,size(pt_1,1))];
+pt_2 = [(pt_2.Location)';ones(1,size(pt_2,1))];
 
 ll=[];lr=[];
 for i = 1:size(pt_1,2)
@@ -348,3 +348,12 @@ for i = 1:size(pt_1,2)
     points2=lineToBorderPoints(l1',[680 850]);
     figure(1);hold on;line(points2(:,[1,3])',points2(:,[2,4])')
 end
+
+
+%%
+% c) calculate disparity map
+imgA = imread('img1.pmg')
+disparityMap = disparity(imgA,imgB);
+disparityMap = uint8(disparityMap);
+%%
+% d) calculate and display depth map
