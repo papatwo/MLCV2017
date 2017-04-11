@@ -144,20 +144,20 @@ const = Ft*[X1(1);Y1(1);1]; % epiline eq in img2 ?????
 
 % calculate Epipolar line from F for every point in the image
 % for test
-load load stereoPointPairs;
+load stereoPointPairs;
 pt_1 = [matchedPoints1 ones(size(matchedPoints1,1),1)]';
 pt_2 = [matchedPoints2 ones(size(matchedPoints2,1),1)]';
 
 ll=[];lr=[];
-figure(1);scatter(matchedPoints1(:,1),matchedPoints1(:,2));
-figure(2);scatter(matchedPoints1(:,1),matchedPoints1(:,2));
+figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
+figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
 for i = 1:size(pt_1,2)
     l2 = F*pt_1(:,i);    % Epipolar lines in image1: projection from imgA to B]'
     l1 = F'*pt_2(:,i);   % Epipolar lines in image2: projection from imgB to A
     points1=lineToBorderPoints(l2',[350 350]);  
-    figure(1);hold on;line(points1(:,[1,3])',points1(:,[2,4])')
+    figure(2);hold on;line(points1(:,[1,3])',points1(:,[2,4])')
     points2=lineToBorderPoints(l1',[350 350]);
-    figure(2);hold on;line(points2(:,[1,3])',points2(:,[2,4])')
+    figure(1);hold on;line(points2(:,[1,3])',points2(:,[2,4])')
 end
 
 
@@ -299,6 +299,11 @@ autoH = homography2d(ax1, ax2)
 fig1=vgg_gui_H(imgA,imgB,manuH)
 fig2=vgg_gui_H(imgA,imgB,autoH)
 
+% analyse the geometirc transformation param!!!!!
+%%%%%%%%%
+%%%%%%%%%
+%%%%%%%%%
+
 %% 
 % c) estimate H matrix from different no. correspondences (autoselect)
 ax1all = [matchedPoints1.Location';ones(1,size(matchedPoints1.Location,1))];
@@ -319,4 +324,35 @@ end
 
 %%
 % 2) Stereo Vision (use images FD)
+% a) estimate F matrix (using Q1.2a points)
+% b) calculate epipoles and epipolar lines
+ax1 = [matchedPoints1.Location';ones(1,size(matchedPoints1.Location,1))];
+ax1 = ax1(:,1:8); % use only 4 points to compute H???
+ax2 = [matchedPoints2.Location';ones(1,size(matchedPoints2.Location,1))];
+ax2 = ax2(:,1:8);
 
+[F,e1,e2] = get_fMatrix(ax1,ax2);
+pt_1 = matchedPoints1.selectStrongest(8);
+pt_2 = matchedPoints2.selectStrongest(8);
+figure;imshow(imgA);hold on; plot(pt_1);
+figure;imshow(imgB);hold on; plot(pt_2);
+pt_1 = [(pt_1.Location)';ones(1,size(pt_1,1))];
+pt_2 = [(pt_2.Location)';ones(1,size(pt_2,1))];
+
+ll=[];lr=[];
+for i = 1:size(pt_1,2)
+    l2 = F*pt_1(:,i);    % Epipolar lines in image1: projection from imgA to B]'
+    l1 = F'*pt_2(:,i);   % Epipolar lines in image2: projection from imgB to A
+    points1=lineToBorderPoints(l2',[680 850]);  
+    figure(2);hold on;line(points1(:,[1,3])',points1(:,[2,4])')
+    points2=lineToBorderPoints(l1',[680 850]);
+    figure(1);hold on;line(points2(:,[1,3])',points2(:,[2,4])')
+end
+
+
+%%
+% c) calculate disparity map
+disparityMap = disparity(imgA,imgB);
+
+%%
+% d) calculate and display depth map
