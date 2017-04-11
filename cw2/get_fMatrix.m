@@ -15,9 +15,9 @@ function [F,e1,e2] = get_fMatrix(pt_l, pt_r)
 %          e1     - The epipole in image 1 such that F*e1 = 0
 %          e2     - The epipole in image 2 such that F'*e2 = 0
 
-if size(pt_l,1)<3
-    pt_l = [pt_l;ones(1,size(pt_l,2))];
-    pt_r = [pt_r;ones(1,size(pt_r,2))];
+if size(pt_l,2)<3
+    pt_l = [pt_l ones(size(pt_l,1),1)]';
+    pt_r = [pt_r ones(size(pt_r,1),1)]';
 end
 % Normalise each set of points so that the origin
 % is at centroid and mean distance from origin is sqrt(2).
