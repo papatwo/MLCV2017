@@ -1,9 +1,7 @@
 %% Q1. Matching
 % close all; clear all
 % 1) Manual
-img = im2double(imread('images.jpg'));
-% img = im2double(imread('test1.png'));
-% img = im2double(imread('test2.png'));
+img = im2double(imread('img1.pgm'));
 imshow(img);
 [X1,Y1] = ginput(8); % get interest points in imgA
 [X2,Y2] = ginput(8); % get interest points in imgB
@@ -45,22 +43,28 @@ threshold = 0.97;
 
 ptA = get_interePt(imgA, patch_size);
 ptB = get_interePt(imgB, patch_size);
-featuresA = get_feature(imgA,ptA,patch_size);
-featuresB = get_feature(imgB,ptB,patch_size);
+% featuresA = get_feature(imgA,ptA,patch_size);
+% featuresB = get_feature(imgB,ptB,patch_size);
+
+[featuresR] = get_features(double(imread(imgA)), ptA(1,:), ptA(2,:), 32);
+[featuresR2] = get_features(double(imread(imgB)), ptB(1,:), ptB(2,:), 32);
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
 
 % for match accuracy test
-point = 1; % change this number for any point we want
+close all
+ptA = get_interePt(imgA, patch_size);
+ptB = get_interePt(imgB, patch_size);
+point = 2; % change this number for any point we want
 a=ptA(:,matchmy(point,1))';
 figure(1);hold on;plot(a(1,1),a(1,2),'r*')
 b=ptB(:,matchmy(point,2))';
 figure(2);hold on;plot(b(1),b(2),'r*')
-
-figure; clf; imagesc(im1rgb); hold on;
-% show features detected in image 1
-plot(im1_pts(1,:),im1_pts(2,:),'+g');
-% show displacements
-line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
+% %%
+% figure; clf; imagesc(imread(imgA)); hold on;
+% % show features detected in image 1
+% plot(matchmy(:,1),matchmy(:,2),'+g');
+% % show displacements
+% line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
 
 %% Use builtin function
 imgA = im2double(imread(imgA));
@@ -85,10 +89,14 @@ figure; showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
 %% 3) Transformation estimation
 
 % SELF-WRITTEN: by using SVD solution to compute H (with mistakes)
-H = get_homography(corre1,corre2);
+H = get_homography(a,b);
 
 % Implemented library code: (correct!!!)
-H = homography2d(x1, x2);
+a=ptA(:,matchmy(:,1))';
+a=[a(1:4,:)';ones(1,4)];
+b=ptB(:,matchmy(:,2))';
+b=[b(1:4,:)';ones(1,4)];
+H = homography2d(a, b);
 
 % for transformation test:
 i = 1; % change this number to any point you want to test
