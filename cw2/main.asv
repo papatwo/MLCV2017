@@ -352,8 +352,27 @@ end
 
 %%
 % c) calculate disparity map
-imgA = imread('img1.pmg')
-disparityMap = disparity(imgA,imgB);
-disparityMap = uint8(disparityMap);
+imgA = imread('scene1.row3.col1.ppm');
+imgB = imread('scene1.row3.col2.ppm');
+disparityRange = [-6 10];
+disparityMap = disparity(rgb2gray(imgA),rgb2gray(imgB),'BlockSize',...
+    15,'DisparityRange',disparityRange);
+figure
+imshow(disparityMap,disparityRange);
+title('Disparity Map');
+colormap jet
+colorbar
 %%
 % d) calculate and display depth map
+disparityMap(abs(disparityMap)>100)=0;
+figure;surf(disparityMap',imgA,'FaceColor','texturemap','EdgeColor','none');
+
+
+%%
+% e) change focal length by 2mm and do depth map again
+%%%%%%
+%%%%%%
+%%%%%%
+
+% add Gaussian noise to disparity map and do depth map again
+Gaussian = randn(size(disparityMap));

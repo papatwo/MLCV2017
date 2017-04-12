@@ -364,5 +364,18 @@ colormap jet
 colorbar
 %%
 % d) calculate and display depth map
- disparityMap(abs(disparityMap)>100)=0;
- figure;surf(disparityMap,'FaceColor','texturemap','EdgeColor','none');
+disparityMap(abs(disparityMap)>100)=0;
+figure;surf(disparityMap',imgA,'FaceColor','texturemap','EdgeColor','none');
+
+
+%%
+% e) change focal length by 2mm and do depth map again
+%%%%%%
+%%%%%%
+%%%%%%
+
+% add Gaussian noise to disparity map and do depth map again
+Gaussian = randn(size(disparityMap));
+Gaussian(abs(Gaussian)>2)=0;
+disparity_noise = disparityMap+Gaussian;
+figure;surf(disparity_noise',imgA,'FaceColor','texturemap','EdgeColor','none');
