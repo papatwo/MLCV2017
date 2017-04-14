@@ -56,7 +56,8 @@ Sxy = imfilter(Ixy, h);
 alpha = 0.04;
 R = (Sx2.*Sy2 - Sxy.^2)-alpha*(Sx2 + Sy2).^2;
 R_sort = sort(reshape(R,[],1),'descend');
-threshold = R_sort(50);
+% threshold = R_sort(50);
+threshold = 0.7;
 % Remove low gardients, graythresh makes the threshold adapt to image
 highR = R>threshold;
 

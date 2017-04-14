@@ -37,108 +37,126 @@ imshow(img);
 
 %% Use self-written function
 patch_size = 32;
-imgA = 'img1.pgm';
-imgB = 'img2.pgm';
-threshold = 0.97;
+imgA = 'sage_1.ppm';
+imgB = 'sage_2.ppm';
+threshold = 0.9;
 
 ptA = get_interePt(imgA, patch_size);
 ptB = get_interePt(imgB, patch_size);
-% featuresA = get_feature(imgA,ptA,patch_size);
-% featuresB = get_feature(imgB,ptB,patch_size);
 
-[featuresR] = get_features(double(imread(imgA)), ptA(1,:), ptA(2,:), 32);
-[featuresR2] = get_features(double(imread(imgB)), ptB(1,:), ptB(2,:), 32);
+I1 = im2double(imread(imgA));
+I2 = im2double(imread(imgB));
+
+% featuresA = get_feature(I1,ptA, patch_size);
+% featuresB = get_feature(I2, ptB, patch_size);
+featuresA = get_features(I1, ptA(1,:), ptA(2,:), patch_size);
+featuresB = get_features(I2, ptB(1,:), ptB(2,:), patch_size);
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
 
-% for match accuracy test
-close all
-ptA = get_interePt(imgA, patch_size);
-ptB = get_interePt(imgB, patch_size);
-point = 2; % change this number for any point we want
-a=ptA(:,matchmy(point,1))';
-figure(1);hold on;plot(a(1,1),a(1,2),'r*')
-b=ptB(:,matchmy(point,2))';
-figure(2);hold on;plot(b(1),b(2),'r*')
-% %%
-% figure; clf; imagesc(imread(imgA)); hold on;
-% % show features detected in image 1
-% plot(matchmy(:,1),matchmy(:,2),'+g');
-% % show displacements
-% line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
+a = ptA(:,matchmy(:,1))';
+b = ptB(:,matchmy(:,2))';
+figure
+showMatchedFeatures(I1, I2, a, b, 'montage');
 
-%% Use builtin function
-imgA = im2double(imread(imgA));
-cornersA = detectHarrisFeatures(imgA);
-figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
 
-imgB = im2double(imread(imgB));
-cornersB = detectHarrisFeatures(imgB);
-figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(50));
+% % for match accuracy test
+% %close all
+% ptA = get_interePt(imgA, patch_size);
+% ptB = get_interePt(imgB, patch_size);
+% point = 2; % change this number for any point we want
+% a=ptA(:,matchmy(point,1))';
+% figure(1);hold on;plot(a(1,1),a(1,2),'r*')
+% b=ptB(:,matchmy(point,2))';
+% figure(2);hold on;plot(b(1),b(2),'r*')
+% % %%
+%  figure; clf; imagesc(imread(imgA)); hold on;
+% % % show features detected in image 1
+%  plot(matchmy(:,1),matchmy(:,2),'+g');
+% % % show displacements
+%  line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
 
-I1 = imgA;
-I2 = imgB;
-points1 = detectHarrisFeatures(I1);
-points2 = detectHarrisFeatures(I2);
-[features1,valid_points1] = extractFeatures(I1,points1);
-[features2,valid_points2] = extractFeatures(I2,points2);
-indexPairs = matchFeatures(features1,features2);
-matchedPoints1 = valid_points1(indexPairs(:,1),:);
-matchedPoints2 = valid_points2(indexPairs(:,2),:);
-figure; showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
+% %% Use builtin function
+% imgA = im2double(imread(imgA));
+% cornersA = detectHarrisFeatures(rgb2gray(imgA));
+% figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
+% 
+% imgB = im2double(imread(imgB));
+% cornersB = detectHarrisFeatures(rgb2gray(imgB));
+% figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(50));
+% 
+% I1 = imgA;
+% I2 = imgB;
+% points1 = detectHarrisFeatures(rgb2gray(I1));
+% points2 = detectHarrisFeatures(rgb2gray(I2));
+% [features1,valid_points1] = extractFeatures(rgb2gray(I1),points1);
+% [features2,valid_points2] = extractFeatures(rgb2gray(I2),points2);
+% indexPairs = matchFeatures(features1,features2);
+% matchedPoints1 = valid_points1(indexPairs(:,1),:);
+% matchedPoints2 = valid_points2(indexPairs(:,2),:);
+% figure; showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
 
 %% 3) Transformation estimation
 
 % SELF-WRITTEN: by using SVD solution to compute H (with mistakes)
-H = get_homography(a,b);
+%   input points for get H should be 2xN 
+% 4 matched pts are enough for the computation
+H = get_homography(a(1:4,:)',b(1:4,:)');
 
-% Implemented library code: (correct!!!)
-a=ptA(:,matchmy(:,1))';
-a=[a(1:4,:)';ones(1,size(a,1))];
-b=ptB(:,matchmy(:,2))';
-b=[b(1:4,)';ones(1,size(b,1))];
-H = homography2d(a, b);
+% % Implemented library code: (correct!!!)
+% a=[a(1:4,:)';ones(1,4)];
+% b=[b(1:4,:)';ones(1,4)];
+% H = homography2d(a, b);
+% H = H./H(end,end);
 
 % for transformation test:
-i = 1; % change this number to any point you want to test
-corre = H*[corre1(:,i);1];
-corre = corre./corre(end); % norm the points vector
+i = 3; % change this number to any point you want to test
+corre = H*[a(i,:)';1];
+corre = corre./corre(end);
 %% 
 % b) fundamental matrix
-load stereoPointPairs % for test convenience
+% load stereoPointPairs % for test convenience
 
-%   input points for get H should be 2xN
+matchedPoints1 = a(1:8,:);
+matchedPoints2 = b(1:8,:);
+matchedPoints1 =[ matchedPoints1';ones(1,8)];
+matchedPoints2 =[ matchedPoints2';ones(1,8)];
 [F,e1,e2] = get_fMatrix(matchedPoints1,matchedPoints2);
 % % by using builtin
+matchedPoints1 = a(1:16,:);
+matchedPoints2 = b(1:16,:);
+matchedPoints1 =[ matchedPoints1';ones(1,16)];
+matchedPoints2 =[ matchedPoints2';ones(1,16)];
 % F1 = estimateFundamentalMatrix(matchedPoints1,matchedPoints2);
 
 %%
 % c) projecting from imgB to A via homography.
 %   calculate avg dist in pixels between these two mapped points
 %   input points for get H should be Nx3
-if size(matchedPoints1,2)<3
-    H = homography2d([matchedPoints1(1:4,:) ones(4,1)]', [matchedPoints2(1:4,:) ones(4,1)]');
-end
+% if size(matchedPoints1,2)<3
+%     H = homography2d([matchedPoints1(1:4,:) ones(4,1)]', [matchedPoints2(1:4,:) ones(4,1)]');
+% end
 
+H = get_homography(a(1:15,:)',b(1:15,:)'); % when H is computed from 15 pts it has lowest projection error!!!!!!!!!!!
 % for testing accuracy, find another set of match points
 proj_ptB = [];
-testPoints1=!!!;
-testPoints2=!!!;
+testPoints1=a;%!!!;
+testPoints2=b;%!!!;
 for i = 1:size(testPoints1,1)
     ptA = [testPoints1(i,:) 1];
     proj = H * ptA';
-%     proj = proj./proj(end);
+    proj = proj./proj(end);
     proj(end)=[];
     proj = proj';
     proj_ptB = [proj_ptB; proj];
 end
-HA = sum(proj_ptB - testPoints2);
+HA = sum(abs(proj_ptB - testPoints2))./size(a,1)
 
-% MAYBE another way test
-h11=H(1,1);h12=H(1,2);h13=H(1,3);
-h31=H(3,1);h32=H(3,2);
-x2pr=(h11*matchedPoints1(1,1)+h12*matchedPoints1(1,2)+h13)...
-    /(h31*matchedPoints1(1,1)+h32*matchedPoints1(1,2)+1);
-HA = sum(proj_ptB - matchedPoints2);
+% % % MAYBE another way test
+% h11=H(1,1);h12=H(1,2);h13=H(1,3);
+% h31=H(3,1);h32=H(3,2);
+% x2pr=(h11*matchedPoints1(1,1)+h12*matchedPoints1(1,2)+h13)...
+%     /(h31*matchedPoints1(1,1)+h32*matchedPoints1(1,2)+1);
+% HA = sum(proj_ptB - matchedPoints2);
 
 %%
 % d) calculate epipolar line given point coor and a F
@@ -147,25 +165,45 @@ HA = sum(proj_ptB - matchedPoints2);
 % corresponding epipolar lines on the two images.
 
 % x2'*F*x1 = 0 by fixing xy coor in x1 vector
+% test = [b(18,:) 1]*F*[a(18,:) 1]' % satisfy x2'*F*x1 = 0
 % x2'* 3x1constant = 0;
-const = Ft*[X1(1);Y1(1);1]; % epiline eq in img2 ?????
+
 
 % calculate Epipolar line from F for every point in the image
 % for test
-load stereoPointPairs;
-pt_1 = [matchedPoints1 ones(size(matchedPoints1,1),1)]';
-pt_2 = [matchedPoints2 ones(size(matchedPoints2,1),1)]';
+% load stereoPointPairs;
+% pt_1 = [matchedPoints1 ones(size(matchedPoints1,1),1)]';
+% pt_2 = [matchedPoints2 ones(size(matchedPoints2,1),1)]';
+pt_1 = matchedPoints1;
+pt_2 = matchedPoints2;
+figure(1);hold on
+plot(matchedPoints1(1,:), matchedPoints1(2,:),'r*');
+figure(2);hold on
+plot(matchedPoints2(1,:), matchedPoints2(2,:),'r*');
 
-ll=[];lr=[];
-figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
-figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
+% figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
+% figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
 for i = 1:size(pt_1,2)
-    l2 = F*pt_1(:,i);    % Epipolar lines in image1: projection from imgA to B]'
-    l1 = F'*pt_2(:,i);   % Epipolar lines in image2: projection from imgB to A
-    points1=lineToBorderPoints(l2',[350 350]);  
-    figure(2);hold on;line(points1(:,[1,3])',points1(:,[2,4])')
-    points2=lineToBorderPoints(l1',[350 350]);
-    figure(1);hold on;line(points2(:,[1,3])',points2(:,[2,4])')
+    line1 = F'*pt_2(:,i);
+    line1 = line1 ./ sqrt ( repmat ( line1 (1 ,:).^2 + line1 (2 ,:).^2 ,[3 1]));
+    line2 = F'*pt_1(:,i);
+    line2 = line2 ./ sqrt ( repmat ( line2 (1 ,:).^2 + line2 (2 ,:).^2 ,[3 1]));
+    point_x1 = [0 size(I1,2)];
+    point_y1 = [(-line1(1)*point_x1(1)-line1(3))/line1(2)...
+        (-line1(1)*point_x1(2)-line1(3))/line1(2)] ;
+    point_x2 = [0 size(I2,2)];
+    point_y2 = [(-line2(1)*point_x2(1)-line2(3))/line2(2)...
+        (-line2(1)*point_x2(2)-line2(3))/line2(2)] ;
+    figure(1);hold on
+    plot(point_x1,point_y1);
+    figure(2);hold on
+    plot(point_x2,point_y2);
+%     l2 = F*pt_1(:,i);    % Epipolar lines in image1: projection from imgA to B]'
+%     l1 = F'*pt_2(:,i);   % Epipolar lines in image2: projection from imgB to A
+%     points1=lineToBorderPoints(l2',[350 350]);  
+%     figure(2);hold on;line(points1(:,[1,3])',points1(:,[2,4])')
+%     points2=lineToBorderPoints(l1',[350 350]);
+%     figure(1);hold on;line(points2(:,[1,3])',points2(:,[2,4])')
 end
 
 
