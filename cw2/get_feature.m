@@ -7,7 +7,7 @@ function features = get_feature(img,intere_pt,patch_size)
 %  Convert gradient directions into corresponding bin from the 8 bins
 %  (0:45:360)
 
-% For each interest point, iterate over each cell in 3x3 grid (??? change
+% For each interest point, iterate over each cell in 4x4 grid (??? change
 % to 32x32). For each cell, extract subarray of gradient magnitudes and
 % directions. Calculate bin count weighted by gradient magnitudes for each
 % cell. Concatente and normalize to get features for interest point
@@ -21,12 +21,11 @@ length(c)
 features = zeros(length(c),128); % 128 dimensions or 121???
 
 % zero-pad image
-img = im2double(imread(img));
 % img = im2double(imread('test1.png'));
 % img = im2double(imread('test2.png'));
-% if size(size(img),2)>2 % or selecting ONE colour channel
-%     img = rgb2gray(img);
-% end
+ if size(size(img),2)>2 % or selecting ONE colour channel
+     img = rgb2gray(img);
+ end
 % blurMask=[0.03 0.105 0.222 0.286 0.222 0.105 0.03];
 % img = conv2(img, blurMask, 'same');
 img_pad = padarray(img,[patch_size/2 patch_size/2],'symmetric');
