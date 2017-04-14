@@ -36,7 +36,7 @@ imshow(img);
 % from most confident to least confident
 %%
 imgA = 'img1.pgm';
-imgB = 'img2.pgm';
+imgB = 'img3.pgm';
 
 imgA = im2double(imread(imgA));
 if size(size(imgA),2)>2 % or selecting ONE colour channel
@@ -49,10 +49,11 @@ if size(size(imgB),2)>2 % or selecting ONE colour channel
 end
 %% Use self-written function
 patch_size = 32;
-threshold = 0.9;
+Rthresh = 3000;
+threshold = 0.95;
 
-ptA = get_interePt(imgA, patch_size);
-ptB = get_interePt(imgB, patch_size);
+ptA = get_interePt(imgA, patch_size, Rthresh);
+ptB = get_interePt(imgB, patch_size, Rthresh);
 
 %featuresA = get_feature(imgA, ptA, patch_size);
 %featuresB = get_feature(imgB, ptB, patch_size);
@@ -63,23 +64,9 @@ featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
 
 a = ptA(:,matchmy(:,1))';
 b = ptB(:,matchmy(:,2))';
+
 figure
 showMatchedFeatures(imgA, imgB , a, b, 'montage');
-
-% for match accuracy test
-%close all
-
-% point = 2; % change this number for any point we want
-% a=ptA(:,matchmy(point,1))';
-% figure(1);hold on;plot(a(1,1),a(1,2),'r*')
-% b=ptB(:,matchmy(point,2))';
-% figure(2);hold on;plot(b(1),b(2),'r*')
-% %%
-% figure; clf; imagesc(imread(imgA)); hold on;
-% % show features detected in image 1
-% plot(matchmy(:,1),matchmy(:,2),'+g');
-% % show displacements
-% line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
 
 
 %% Use builtin function
