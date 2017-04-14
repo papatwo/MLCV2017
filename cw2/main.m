@@ -34,9 +34,22 @@ imshow(img);
 
 % Return best match for each interest point along with confidences in order
 % from most confident to least confident
+%%
+imgA = 'img1.pgm';
+imgB = 'img3.pgm';
 
+imgA = im2double(imread(imgA));
+if size(size(imgA),2)>2 % or selecting ONE colour channel
+    imgA = rgb2gray(imgA);
+end
+
+imgB = im2double(imread(imgB));
+if size(size(imgB),2)>2 % or selecting ONE colour channel
+    imgB = rgb2gray(imgB);
+end
 %% Use self-written function
 patch_size = 32;
+<<<<<<< HEAD
 imgA = 'sage_1.ppm';
 imgB = 'sage_2.ppm';
 threshold = 0.9;
@@ -94,6 +107,41 @@ showMatchedFeatures(I1, I2, a, b, 'montage');
 % matchedPoints1 = valid_points1(indexPairs(:,1),:);
 % matchedPoints2 = valid_points2(indexPairs(:,2),:);
 % figure; showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
+=======
+Rthresh = 3000;
+threshold = 0.95;
+
+ptA = get_interePt(imgA, patch_size, Rthresh);
+ptB = get_interePt(imgB, patch_size, Rthresh);
+
+%featuresA = get_feature(imgA, ptA, patch_size);
+%featuresB = get_feature(imgB, ptB, patch_size);
+featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
+featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
+
+[matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
+
+a = ptA(:,matchmy(:,1))';
+b = ptB(:,matchmy(:,2))';
+
+figure
+showMatchedFeatures(imgA, imgB , a, b, 'montage');
+
+
+%% Use builtin function
+cornersA = detectHarrisFeatures(imgA);
+figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
+
+cornersB = detectHarrisFeatures(imgB);
+figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(20));
+
+[features1,valid_points1] = extractFeatures(imgA,cornersA);
+[features2,valid_points2] = extractFeatures(imgB,cornersB);
+indexPairs = matchFeatures(features1,features2);
+matchedPoints1 = valid_points1(indexPairs(:,1),:);
+matchedPoints2 = valid_points2(indexPairs(:,2),:);
+figure; showMatchedFeatures(imgA,imgB,matchedPoints1,matchedPoints2, 'montage');
+>>>>>>> acf1ea56d5e6892d834917b00b1393813224e5da
 
 %% 3) Transformation estimation
 

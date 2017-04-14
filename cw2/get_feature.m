@@ -16,16 +16,12 @@ function features = get_feature(img,intere_pt,patch_size)
 c = intere_pt(1,:)';
 % r = intere_pt(2,:)';
 
-length(c)
 % As in coordinate convention: c-x, r-y
 features = zeros(length(c),128); % 128 dimensions or 121???
 
 % zero-pad image
 % img = im2double(imread('test1.png'));
 % img = im2double(imread('test2.png'));
- if size(size(img),2)>2 % or selecting ONE colour channel
-     img = rgb2gray(img);
- end
 % blurMask=[0.03 0.105 0.222 0.286 0.222 0.105 0.03];
 % img = conv2(img, blurMask, 'same');
 img_pad = padarray(img,[patch_size/2 patch_size/2],'symmetric');
