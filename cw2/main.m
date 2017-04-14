@@ -46,8 +46,8 @@ ptB = get_interePt(imgB, patch_size);
 % featuresA = get_feature(imgA,ptA,patch_size);
 % featuresB = get_feature(imgB,ptB,patch_size);
 
-[featuresA] = get_feature(double(imread(imgA)), ptA, patch_size);
-[featuresB] = get_feature(double(imread(imgB)), ptB, patch_size);
+[featuresA] = get_feature(im2double(imread(imgA)), ptA, patch_size);
+[featuresB] = get_feature(im2double(imread(imgB)), ptB, patch_size);
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
 
 % for match accuracy test
