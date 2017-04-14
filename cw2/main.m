@@ -34,57 +34,66 @@ imshow(img);
 
 % Return best match for each interest point along with confidences in order
 % from most confident to least confident
+%%
+imgA = 'img1.pgm';
+imgB = 'img2.pgm';
 
+imgA = im2double(imread(imgA));
+if size(size(imgA),2)>2 % or selecting ONE colour channel
+    imgA = rgb2gray(imgA);
+end
+
+imgB = im2double(imread(imgB));
+if size(size(imgB),2)>2 % or selecting ONE colour channel
+    imgB = rgb2gray(imgB);
+end
 %% Use self-written function
 patch_size = 32;
-imgA = 'sage_1.ppm';
-imgB = 'sage_2.ppm';
-threshold = 1.0;
+threshold = 0.9;
 
 ptA = get_interePt(imgA, patch_size);
 ptB = get_interePt(imgB, patch_size);
-% featuresA = get_feature(imgA,ptA,patch_size);
-% featuresB = get_feature(imgB,ptB,patch_size);
 
-[featuresA] = get_feature(double(imread(imgA)), ptA, patch_size);
-[featuresB] = get_feature(double(imread(imgB)), ptB, patch_size);
+%featuresA = get_feature(imgA, ptA, patch_size);
+%featuresB = get_feature(imgB, ptB, patch_size);
+featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
+featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
+
+a = ptA(:,matchmy(:,1))';
+b = ptB(:,matchmy(:,2))';
+figure
+showMatchedFeatures(imgA, imgB , a, b, 'montage');
 
 % for match accuracy test
 %close all
-ptA = get_interePt(imgA, patch_size);
-ptB = get_interePt(imgB, patch_size);
-point = 2; % change this number for any point we want
-a=ptA(:,matchmy(point,1))';
-figure(1);hold on;plot(a(1,1),a(1,2),'r*')
-b=ptB(:,matchmy(point,2))';
-figure(2);hold on;plot(b(1),b(2),'r*')
+
+% point = 2; % change this number for any point we want
+% a=ptA(:,matchmy(point,1))';
+% figure(1);hold on;plot(a(1,1),a(1,2),'r*')
+% b=ptB(:,matchmy(point,2))';
+% figure(2);hold on;plot(b(1),b(2),'r*')
 % %%
- figure; clf; imagesc(imread(imgA)); hold on;
+% figure; clf; imagesc(imread(imgA)); hold on;
 % % show features detected in image 1
- plot(matchmy(:,1),matchmy(:,2),'+g');
+% plot(matchmy(:,1),matchmy(:,2),'+g');
 % % show displacements
- line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
+% line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
+
 
 %% Use builtin function
-imgA = im2double(imread(imgA));
 cornersA = detectHarrisFeatures(imgA);
 figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
 
-imgB = im2double(imread(imgB));
 cornersB = detectHarrisFeatures(imgB);
-figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(50));
+figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(20));
 
-I1 = imgA;
-I2 = imgB;
-points1 = detectHarrisFeatures(I1);
-points2 = detectHarrisFeatures(I2);
-[features1,valid_points1] = extractFeatures(I1,points1);
-[features2,valid_points2] = extractFeatures(I2,points2);
+[features1,valid_points1] = extractFeatures(imgA,cornersA);
+[features2,valid_points2] = extractFeatures(imgB,cornersB);
 indexPairs = matchFeatures(features1,features2);
 matchedPoints1 = valid_points1(indexPairs(:,1),:);
 matchedPoints2 = valid_points2(indexPairs(:,2),:);
-figure; showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
+figure; showMatchedFeatures(imgA,imgB,matchedPoints1,matchedPoints2, 'montage');
 
 %% 3) Transformation estimation
 

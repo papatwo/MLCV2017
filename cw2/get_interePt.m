@@ -6,10 +6,7 @@ function intere_pt = get_interePt(img, patch_size)
 % img = im2double(imread('test1.png'));
 % img = im2double(imread('test2.png'));
 % imshow(img);
- img = im2double(imread(img));
-if size(size(img),2)>2 % or selecting ONE colour channel
-    img = rgb2gray(img);
-end
+
 blurMask=[0.03 0.105 0.222 0.286 0.222 0.105 0.03];
 % img = conv2(img, blurMask, 'same');
 %[X1,Y1] = ginput(5); % get interest points in imgA
@@ -56,7 +53,7 @@ Sxy = imfilter(Ixy, h);
 alpha = 0.04;
 R = (Sx2.*Sy2 - Sxy.^2)-alpha*(Sx2 + Sy2).^2;
 R_sort = sort(reshape(R,[],1),'descend');
-threshold = R_sort(50);
+threshold = mean(R_sort(1:min([10000,length(R_sort)])));
 % Remove low gardients, graythresh makes the threshold adapt to image
 highR = R>threshold;
 
