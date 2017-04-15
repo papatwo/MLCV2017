@@ -52,26 +52,21 @@ if size(size(imgB),2)>2 % or selecting ONE colour channel
     imgB = rgb2gray(imgB);
 end
 patch_size = 32;
+threshold = 0.9;
 
-% I1 = rgb2gray(imread(imgA));
-% I2 = rgb2gray(imread(imgB));
-% threshold = 0.9;
-% 
-% ptA = get_interePt(I1, patch_size,Rthresh);
-% ptB = get_interePt(I2, patch_size,Rthresh);
-% 
-% 
-% 
-% % featuresA = get_feature(I1,ptA, patch_size);
-% % featuresB = get_feature(I2, ptB, patch_size);
-% featuresA = get_features(I1, ptA(1,:), ptA(2,:), patch_size);
-% featuresB = get_features(I2, ptB(1,:), ptB(2,:), patch_size);
-% [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
-% 
-% a = ptA(:,matchmy(:,1))';
-% b = ptB(:,matchmy(:,2))';
-% figure
-% showMatchedFeatures(I1, I2, a, b, 'montage');
+ptA = get_interePt(imgA, patch_size, Rthresh);
+ptB = get_interePt(imgB, patch_size, Rthresh);
+
+% featuresA = get_feature(I1,ptA, patch_size);
+% featuresB = get_feature(I2, ptB, patch_size);
+featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
+featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
+[matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
+
+a = ptA(:,matchmy(:,1))';
+b = ptB(:,matchmy(:,2))';
+figure
+showMatchedFeatures(imgA, imgB, a, b, 'montage');
 
 
 % % for match accuracy test
@@ -90,46 +85,6 @@ patch_size = 32;
 % % % show displacements
 %  line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
 
-% %% Use builtin function
-% imgA = im2double(imread(imgA));
-% cornersA = detectHarrisFeatures(rgb2gray(imgA));
-% figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
-% 
-% imgB = im2double(imread(imgB));
-% cornersB = detectHarrisFeatures(rgb2gray(imgB));
-% figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(50));
-% 
-% I1 = imgA;
-% I2 = imgB;
-% points1 = detectHarrisFeatures(rgb2gray(I1));
-% points2 = detectHarrisFeatures(rgb2gray(I2));
-% [features1,valid_points1] = extractFeatures(rgb2gray(I1),points1);
-% [features2,valid_points2] = extractFeatures(rgb2gray(I2),points2);
-% indexPairs = matchFeatures(features1,features2);
-% matchedPoints1 = valid_points1(indexPairs(:,1),:);
-% matchedPoints2 = valid_points2(indexPairs(:,2),:);
-% figure; showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% thresh modification by Ceci
-Rthresh = 3000;
-threshold = 0.95;
-
-ptA = get_interePt(imgA, patch_size, Rthresh);
-ptB = get_interePt(imgB, patch_size, Rthresh);
-
-%featuresA = get_feature(imgA, ptA, patch_size);
-%featuresB = get_feature(imgB, ptB, patch_size);
-featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
-featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
-
-[matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
-
-a = ptA(:,matchmy(:,1))';
-b = ptB(:,matchmy(:,2))';
-
-figure
-showMatchedFeatures(imgA, imgB , a, b, 'montage');
-
 
 % Use builtin function
 cornersA = detectHarrisFeatures(imgA);
@@ -137,14 +92,15 @@ figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
 
 cornersB = detectHarrisFeatures(imgB);
 figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(20));
-
+%I1 = im2double(imread(imgA));
+%I2 = im2double(imread(imgB));
 [features1,valid_points1] = extractFeatures(imgA,cornersA);
 [features2,valid_points2] = extractFeatures(imgB,cornersB);
 indexPairs = matchFeatures(features1,features2);
 matchedPoints1 = valid_points1(indexPairs(:,1),:);
 matchedPoints2 = valid_points2(indexPairs(:,2),:);
 figure; showMatchedFeatures(imgA,imgB,matchedPoints1,matchedPoints2, 'montage');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%thresh modification by Ceci
+
 
 %% 3) Transformation estimation
 
