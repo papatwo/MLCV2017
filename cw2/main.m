@@ -315,42 +315,50 @@ figure; showMatchedFeatures(small_A,small_B,sa,sb, 'montage');
 % b) estimate H matrix from manually and automatically established corr
 % better to clear var before run this section
 % get correspondences manually
-img = im2double(imread('img1.pgm'));
+img = im2double(imread('sage_1.ppm'));
 imshow(img);
 [X1,Y1] = ginput(16);
 hold on;plot(X1,Y1,'ys');
 
 figure;
-img2 = im2double(imread('img2.pgm'));
+img2 = im2double(imread('sage_2.ppm'));
 imshow(img2);
 [X2,Y2] = ginput(16);
 hold on;plot(X2,Y2,'ys');
 
-x1 = [X1';Y1';ones(1,size(X1,1))];
-% x1 = x1(:,1:4); % use only 4 points to compute H???
-x2 = [X2';Y2';ones(1,size(X2,1))];
-% x2 = x2(:,1:4);
-manuH = homography2d(x1, x2)
+x1 = [X1';Y1'];
+manux1 = x1(:,1:4); % use only 4 points to compute H???
+x2 = [X2';Y2'];
+manux2 = x2(:,1:4);
+manuH = get_homography(manux1,manux2);
 
 % get correspondences automatically (currently using builtin)
-imgA = 'img1.pgm';
-imgB = 'img2.pgm';
+imgA = 'sage_1.ppm';
+imgB = 'sage_2.ppm';
 
-I1 = im2double(imread(imgA));
-I2 = im2double(imread(imgB));
-points1 = detectHarrisFeatures(I1); % get intere_pt
-points2 = detectHarrisFeatures(I2);
-[features1,valid_points1] = extractFeatures(I1,points1); % get SIFT
-[features2,valid_points2] = extractFeatures(I2,points2);
-indexPairs = matchFeatures(features1,features2); % get correspondences
-matchedPoints1 = valid_points1(indexPairs(:,1),:);
-matchedPoints2 = valid_points2(indexPairs(:,2),:);
+imgA = im2double(imread(imgA));
+if size(size(imgA),2)>2 % or selecting ONE colour channel
+    imgA = rgb2gray(imgA);
+end
 
-ax1 = [matchedPoints1.Location';ones(1,size(matchedPoints1.Location,1))];
-ax1 = ax1(:,1:4); % use only 4 points to compute H???
-ax2 = [matchedPoints2.Location';ones(1,size(matchedPoints2.Location,1))];
-ax2 = ax2(:,1:4);
-autoH = homography2d(ax1, ax2)
+imgB = im2double(imread(imgB));
+if size(size(imgB),2)>2 % or selecting ONE colour channel
+    imgB = rgb2gray(imgB);
+end
+patch_size = 32;
+Rthresh = 3000;
+threshold = 0.95;
+
+aptA = get_interePt(imgA, patch_size, Rthresh);
+aptB = get_interePt(imgB, patch_size, Rthresh);
+afeaturesA = get_features(imgA, aptA(1,:), aptA(2,:), patch_size);
+afeaturesB = get_features(imgB, aptB(1,:), aptB(2,:), patch_size);
+
+[amatchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
+
+aa = aptA(:,amatchmy(:,1))';
+ab = aptB(:,amatchmy(:,2))';
+autoH = get_homography(aa(1:4,:)',ab(1:4,:)');
 
 % visualise by existing code written by Peter Kovesi  
 fig1=vgg_gui_H(imgA,imgB,manuH)
