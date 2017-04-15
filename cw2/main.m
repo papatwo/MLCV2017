@@ -34,7 +34,12 @@
 
 % Return best match for each interest point along with confidences in order
 % from most confident to least confident
-%%
+
+%% Use self-written function
+
+% imgA = 'img1.pgm';
+% imgB = 'img3.pgm';
+
 imgA = 'sage_1.ppm';
 imgB = 'sage_2.ppm';
 
@@ -47,7 +52,6 @@ imgB = im2double(imread(imgB));
 if size(size(imgB),2)>2 % or selecting ONE colour channel
     imgB = rgb2gray(imgB);
 end
-%% Use self-written function
 patch_size = 32;
 threshold = 0.9;
 Rthresh = 3000;
@@ -83,14 +87,14 @@ showMatchedFeatures(imgA, imgB, a, b, 'montage');
 % % % show displacements
 %  line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
 
-
-%% Use builtin function
+% Use builtin function
 cornersA = detectHarrisFeatures(imgA);
 figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
 
 cornersB = detectHarrisFeatures(imgB);
 figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(20));
-
+%I1 = im2double(imread(imgA));
+%I2 = im2double(imread(imgB));
 [features1,valid_points1] = extractFeatures(imgA,cornersA);
 [features2,valid_points2] = extractFeatures(imgB,cornersB);
 indexPairs = matchFeatures(features1,features2);
@@ -192,10 +196,10 @@ for i = 1:size(pt_1,2)
     line1 = line1 ./ sqrt ( repmat ( line1 (1 ,:).^2 + line1 (2 ,:).^2 ,[3 1]));
     line2 = F*pt_1(:,i);
     line2 = line2 ./ sqrt ( repmat ( line2 (1 ,:).^2 + line2 (2 ,:).^2 ,[3 1]));
-    point_x1 = [0 size(I1,2)];
+    point_x1 = [0 size(imgA,2)];
     point_y1 = [(-line1(1)*point_x1(1)-line1(3))/line1(2)...
         (-line1(1)*point_x1(2)-line1(3))/line1(2)] ;
-    point_x2 = [0 size(I2,2)];
+    point_x2 = [0 size(imgB,2)];
     point_y2 = [(-line2(1)*point_x2(1)-line2(3))/line2(2)...
         (-line2(1)*point_x2(2)-line2(3))/line2(2)] ;
     figure(1);hold on
@@ -225,78 +229,81 @@ imgA = 'img1.pgm';
 imgB = 'img2.pgm';
 
 imgA = im2double(imread(imgA));
-cornersA = detectHarrisFeatures(imgA);
-figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
-
-imgB = im2double(imread(imgB));
-cornersB = detectHarrisFeatures(imgB);
-figure;imshow(imgB); hold on;plot(cornersB.selectStrongest(50));
-
-I1 = imgA;
-I2 = imgB;
-points1 = detectHarrisFeatures(I1);
-points2 = detectHarrisFeatures(I2);
-[features1,valid_points1] = extractFeatures(I1,points1);
-[features2,valid_points2] = extractFeatures(I2,points2);
-indexPairs = matchFeatures(features1,features2);
-matchedPoints1 = valid_points1(indexPairs(:,1),:);
-matchedPoints2 = valid_points2(indexPairs(:,2),:);
-figure; showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
-
-% Before Scale
-test1 = cornersA.selectStrongest(50);
-test2 = cornersB.selectStrongest(50);
-test1 = test1.Location;
-test2 = test2.Location;
-if size(test1,2)<3
-    H = homography2d([test1(1:4,:) ones(4,1)]', [test2(1:4,:) ones(4,1)]');
+if size(size(imgA),2)>2 % or selecting ONE colour channel
+    imgA = rgb2gray(imgA);
 end
 
-% for testing accuracy, find another set of match points
+imgB = im2double(imread(imgB));
+if size(size(imgB),2)>2 % or selecting ONE colour channel
+    imgB = rgb2gray(imgB);
+end
+
+% Before Scale
+patch_size = 32;
+Rthresh = 3000;
+threshold = 0.95;
+
+ptA = get_interePt(imgA, patch_size, Rthresh);
+ptB = get_interePt(imgB, patch_size, Rthresh);
+featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
+featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
+
+[matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
+
+a = ptA(:,matchmy(:,1))';
+b = ptB(:,matchmy(:,2))';
+H = get_homography(a(1:4,:)',b(1:4,:)');
 proj_ptB = [];
-% testPoints1=!!!;
-% testPoints2=!!!;
-for i = 1:size(test1,1)
-    ptA = [test1(i,:) 1];
+testPoints1=a;%!!!;
+testPoints2=b;%!!!;
+for i = 1:size(testPoints1,1)
+    ptA = [testPoints1(i,:) 1];
     proj = H * ptA';
     proj = proj./proj(end);
     proj(end)=[];
     proj = proj';
     proj_ptB = [proj_ptB; proj];
 end
-HA = sum((proj_ptB - test2)./test2); % ?????how to normalise the error???????
+HA = sum(abs(proj_ptB - testPoints2))./size(a,1)
+
+figure; showMatchedFeatures(imgA,imgB,a,b, 'montage');
+
 
 % Scale down the size of img by 2
+I1 = imgA;
+I2 = imgB;
 small_A = imresize (I1,0.5);
 small_B = imresize (I2,0.5);
 % detect scaled-down img intere_points
-Spoints1 = detectHarrisFeatures(small_A);
-Spoints2 = detectHarrisFeatures(small_B);
-figure;imshow(small_A); hold on;plot(Spoints1.selectStrongest(50));
-figure;imshow(small_B); hold on;plot(Spoints2.selectStrongest(50));
-% pick up the first 50 strongest intere_pt
-Stest1 = Spoints1.selectStrongest(50);
-Stest2 = Spoints2.selectStrongest(50);
-Stest1 = Stest1.Location;
-Stest2 = Stest2.Location;
-% compute new H matrix for scale-down img
-if size(Stest1,2)<3
-    H_s = homography2d([Stest1(1:4,:) ones(4,1)]', [Stest2(1:4,:) ones(4,1)]');
-end
+patch_size = 32;
+Rthresh = 3000;
+threshold = 0.95;
+
+sptA = get_interePt(small_A, patch_size, Rthresh);
+sptB = get_interePt(small_B, patch_size, Rthresh);
+sfeaturesA = get_features(small_A, sptA(1,:), sptA(2,:), patch_size);
+sfeaturesB = get_features(small_B, sptB(1,:), sptB(2,:), patch_size);
+[smatchmy, ~,~,~] = knn_match(sfeaturesA, sfeaturesB, threshold);
+sa = sptA(:,smatchmy(:,1))';
+sb = sptB(:,smatchmy(:,2))';
+Hs = get_homography(sa(1:4,:)',sb(1:4,:)');
 
 % for testing accuracy, find another set of match points
-Sproj_ptB = [];
-% testPoints1=!!!;
-% testPoints2=!!!;
-for i = 1:size(Stest1,1)
-    ptA = [Stest1(i,:) 1];
-    proj = H_s * ptA';
+proj_ptB = [];
+stestPoints1=sa;%!!!;
+stestPoints2=sb;%!!!;
+for i = 1:size(stestPoints1,1)
+    ptA = [stestPoints1(i,:) 1];
+    proj = H * ptA';
     proj = proj./proj(end);
     proj(end)=[];
     proj = proj';
-    Sproj_ptB = [Sproj_ptB; proj];
+    proj_ptB = [proj_ptB; proj];
 end
-HA_s = sum(Sproj_ptB - Stest2);
+HAs = sum(abs(proj_ptB - stestPoints2))./size(a,1)
+figure; showMatchedFeatures(small_A,small_B,sa,sb, 'montage');
+
+
 
 % img = im2double(imread('img1.pgm'));
 % imshow(img);hold on;plot(X1,Y1,'ys');
@@ -310,13 +317,13 @@ HA_s = sum(Sproj_ptB - Stest2);
 % get correspondences manually
 img = im2double(imread('img1.pgm'));
 imshow(img);
-[X1,Y1] = ginput(8);
+[X1,Y1] = ginput(16);
 hold on;plot(X1,Y1,'ys');
 
 figure;
 img2 = im2double(imread('img2.pgm'));
 imshow(img2);
-[X2,Y2] = ginput(8);
+[X2,Y2] = ginput(16);
 hold on;plot(X2,Y2,'ys');
 
 x1 = [X1';Y1';ones(1,size(X1,1))];
