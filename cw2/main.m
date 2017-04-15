@@ -49,9 +49,6 @@ if size(size(imgB),2)>2 % or selecting ONE colour channel
 end
 %% Use self-written function
 patch_size = 32;
-
-imgA = 'sage_1.ppm';
-imgB = 'sage_2.ppm';
 threshold = 0.9;
 
 ptA = get_interePt(imgA, patch_size, Rthresh);
@@ -59,14 +56,14 @@ ptB = get_interePt(imgB, patch_size, Rthresh);
 
 % featuresA = get_feature(I1,ptA, patch_size);
 % featuresB = get_feature(I2, ptB, patch_size);
-featuresA = get_features(I1, ptA(1,:), ptA(2,:), patch_size);
-featuresB = get_features(I2, ptB(1,:), ptB(2,:), patch_size);
+featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
+featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
 
 a = ptA(:,matchmy(:,1))';
 b = ptB(:,matchmy(:,2))';
 figure
-showMatchedFeatures(I1, I2, a, b, 'montage');
+showMatchedFeatures(imgA, imgB, a, b, 'montage');
 
 % % for match accuracy test
 % %close all
