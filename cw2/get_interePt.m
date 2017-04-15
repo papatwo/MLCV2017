@@ -1,4 +1,4 @@
-function intere_pt = get_interePt(img, patch_size, Rthresh)
+function intere_pt = get_interePt(img, patch_size,Rthresh)
 % img: image path, must be string.
 %% Q1. Matching
 % close all; clear all
@@ -53,12 +53,12 @@ Sxy = imfilter(Ixy, h);
 alpha = 0.04;
 R = (Sx2.*Sy2 - Sxy.^2)-alpha*(Sx2 + Sy2).^2;
 R_sort = sort(reshape(R,[],1),'descend');
-<<<<<<< HEAD
+% <<<<<<< HEAD
 % threshold = R_sort(50);
-threshold = 0.7;
-=======
+% threshold = 0.7;
+% =======
 threshold = mean(R_sort(1:min([Rthresh,length(R_sort)])));
->>>>>>> acf1ea56d5e6892d834917b00b1393813224e5da
+% >>>>>>> acf1ea56d5e6892d834917b00b1393813224e5da
 % Remove low gardients, graythresh makes the threshold adapt to image
 highR = R>threshold;
 
