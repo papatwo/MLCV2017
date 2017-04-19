@@ -65,6 +65,8 @@ featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
 featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
 
+high
+
 a = ptA(:,matchmy(:,1))';
 b = ptB(:,matchmy(:,2))';
 figure
