@@ -68,6 +68,7 @@ featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
 [~,L_sort] = sort(confidence, 2);
 matchmy = matchmy(L_sort',:);
 
+
 a = ptA(:,matchmy(:,1))';
 b = ptB(:,matchmy(:,2))';
 figure
