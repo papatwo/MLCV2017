@@ -53,7 +53,7 @@ if size(size(imgB),2)>2 % or selecting ONE colour channel
     imgB = rgb2gray(imgB);
 end
 patch_size = 32;
-threshold = 0.9;
+threshold = 0.87; % 0.6
 Rthresh = 3000;
 
 ptA = get_interePt(imgA, patch_size, Rthresh);
@@ -64,6 +64,9 @@ ptB = get_interePt(imgB, patch_size, Rthresh);
 featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
 featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
+
+[~,L_sort] = sort(confidence, 2);
+matchmy = matchmy(L_sort',:);
 
 a = ptA(:,matchmy(:,1))';
 b = ptB(:,matchmy(:,2))';
@@ -87,7 +90,7 @@ showMatchedFeatures(imgA, imgB, a, b, 'montage');
 % % % show displacements
 %  line([im1_pts(1,:); im2_pts(1,:)],[im1_pts(2,:); im2_pts(2,:)],'color','y')
 
-% Use builtin function
+%% Use builtin function
 cornersA = detectHarrisFeatures(imgA);
 figure;imshow(imgA); hold on;plot(cornersA.selectStrongest(50));
 
@@ -129,12 +132,12 @@ matchedPoints2 = b(1:8,:);
 matchedPoints1 =[ matchedPoints1';ones(1,8)];
 matchedPoints2 =[ matchedPoints2';ones(1,8)];
 [F,e1,e2] = get_fMatrix(matchedPoints1,matchedPoints2);
-% % by using builtin
+%% by using builtin
 matchedPoints1 = a(1:16,:);
 matchedPoints2 = b(1:16,:);
 matchedPoints1 =[ matchedPoints1';ones(1,16)];
 matchedPoints2 =[ matchedPoints2';ones(1,16)];
-% F1 = estimateFundamentalMatrix(matchedPoints1,matchedPoints2);
+F1 = estimateFundamentalMatrix(matchedPoints1,matchedPoints2);
 
 %%
 % c) projecting from imgB to A via homography.
@@ -225,84 +228,33 @@ end
 % Q2 Image Geometry
 % 1) Homography
 % a) HA before and after scale down the size of img
-imgA = 'img1.pgm';
-imgB = 'img2.pgm';
+imgA = 'HG1.JPG';
 
 imgA = im2double(imread(imgA));
 if size(size(imgA),2)>2 % or selecting ONE colour channel
     imgA = rgb2gray(imgA);
 end
 
-imgB = im2double(imread(imgB));
-if size(size(imgB),2)>2 % or selecting ONE colour channel
-    imgB = rgb2gray(imgB);
-end
-
-% Before Scale
 patch_size = 32;
 Rthresh = 3000;
-threshold = 0.95;
-
+threshold = 0.87;
+small_B = imresize (imgA,0.5);
 ptA = get_interePt(imgA, patch_size, Rthresh);
-ptB = get_interePt(imgB, patch_size, Rthresh);
+ptB = get_interePt(small_B, patch_size, Rthresh);
 featuresA = get_features(imgA, ptA(1,:), ptA(2,:), patch_size);
-featuresB = get_features(imgB, ptB(1,:), ptB(2,:), patch_size);
+featuresB = get_features(small_B, ptB(1,:), ptB(2,:), patch_size);
 
 [matchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
 
+[~,L_sort] = sort(confidence, 2);
+
+matchmy = matchmy(L_sort',:);
 a = ptA(:,matchmy(:,1))';
 b = ptB(:,matchmy(:,2))';
-H = get_homography(a(1:4,:)',b(1:4,:)');
-proj_ptB = [];
-testPoints1=a;%!!!;
-testPoints2=b;%!!!;
-for i = 1:size(testPoints1,1)
-    ptA = [testPoints1(i,:) 1];
-    proj = H * ptA';
-    proj = proj./proj(end);
-    proj(end)=[];
-    proj = proj';
-    proj_ptB = [proj_ptB; proj];
-end
-HA = sum(abs(proj_ptB - testPoints2))./size(a,1)
 
-figure; showMatchedFeatures(imgA,imgB,a,b, 'montage');
+HA = sum(abs(b - a))./size(a,1)
 
-
-% Scale down the size of img by 2
-I1 = imgA;
-I2 = imgB;
-small_A = imresize (I1,0.5);
-small_B = imresize (I2,0.5);
-% detect scaled-down img intere_points
-patch_size = 32;
-Rthresh = 3000;
-threshold = 0.95;
-
-sptA = get_interePt(small_A, patch_size, Rthresh);
-sptB = get_interePt(small_B, patch_size, Rthresh);
-sfeaturesA = get_features(small_A, sptA(1,:), sptA(2,:), patch_size);
-sfeaturesB = get_features(small_B, sptB(1,:), sptB(2,:), patch_size);
-[smatchmy, ~,~,~] = knn_match(sfeaturesA, sfeaturesB, threshold);
-sa = sptA(:,smatchmy(:,1))';
-sb = sptB(:,smatchmy(:,2))';
-Hs = get_homography(sa(1:4,:)',sb(1:4,:)');
-
-% for testing accuracy, find another set of match points
-proj_ptB = [];
-stestPoints1=sa;%!!!;
-stestPoints2=sb;%!!!;
-for i = 1:size(stestPoints1,1)
-    ptA = [stestPoints1(i,:) 1];
-    proj = H * ptA';
-    proj = proj./proj(end);
-    proj(end)=[];
-    proj = proj';
-    proj_ptB = [proj_ptB; proj];
-end
-HAs = sum(abs(proj_ptB - stestPoints2))./size(a,1)
-figure; showMatchedFeatures(small_A,small_B,sa,sb, 'montage');
-
+figure; showMatchedFeatures(imgA,small_B,a,b, 'montage');
 
 
 % img = im2double(imread('img1.pgm'));
