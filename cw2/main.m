@@ -136,8 +136,8 @@ matchedPoints2 =[ matchedPoints2';ones(1,8)];
 %% by using builtin
 matchedPoints1 = a(1:16,:);
 matchedPoints2 = b(1:16,:);
-matchedPoints1 =[ matchedPoints1';ones(1,16)];
-matchedPoints2 =[ matchedPoints2';ones(1,16)];
+% matchedPoints1 =[ matchedPoints1';ones(1,16)];
+% matchedPoints2 =[ matchedPoints2';ones(1,16)];
 F1 = estimateFundamentalMatrix(matchedPoints1,matchedPoints2);
 
 %%
@@ -148,7 +148,7 @@ F1 = estimateFundamentalMatrix(matchedPoints1,matchedPoints2);
 %     H = homography2d([matchedPoints1(1:4,:) ones(4,1)]', [matchedPoints2(1:4,:) ones(4,1)]');
 % end
 
-H = get_homography(a(1:15,:)',b(1:15,:)'); % when H is computed from 15 pts it has lowest projection error!!!!!!!!!!!
+H = get_homography(a(1:4,:)',b(1:4,:)'); % when H is computed from 15 pts it has lowest projection error!!!!!!!!!!!
 % for testing accuracy, find another set of match points
 proj_ptB = [];
 testPoints1=a;%!!!;
@@ -186,19 +186,19 @@ HA = sum(abs(proj_ptB - testPoints2))./size(a,1)
 % load stereoPointPairs;
 % pt_1 = [matchedPoints1 ones(size(matchedPoints1,1),1)]';
 % pt_2 = [matchedPoints2 ones(size(matchedPoints2,1),1)]';
-pt_1 = matchedPoints1;
-pt_2 = matchedPoints2;
+pt_1 = [matchedPoints1 ones(size(matchedPoints1,1),1)];
+pt_2 = [matchedPoints2 ones(size(matchedPoints1,1),1)];
 figure(1);hold on
-plot(matchedPoints1(1,:), matchedPoints1(2,:),'r*');
+plot(matchedPoints1(:,1), matchedPoints1(:,2),'r*');
 figure(2);hold on
-plot(matchedPoints2(1,:), matchedPoints2(2,:),'r*');
+plot(matchedPoints2(:,1), matchedPoints2(:,2),'r*');
 
 % figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
 % figure;scatter(matchedPoints1(:,1),matchedPoints1(:,2));
-for i = 1:size(pt_1,2)
-    line1 = F'*pt_2(:,i);
+for i = 1:size(pt_1,1)
+    line1 = F'*pt_2(i,:)';
     line1 = line1 ./ sqrt ( repmat ( line1 (1 ,:).^2 + line1 (2 ,:).^2 ,[3 1]));
-    line2 = F*pt_1(:,i);
+    line2 = F*pt_1(i,:)';
     line2 = line2 ./ sqrt ( repmat ( line2 (1 ,:).^2 + line2 (2 ,:).^2 ,[3 1]));
     point_x1 = [0 size(imgA,2)];
     point_y1 = [(-line1(1)*point_x1(1)-line1(3))/line1(2)...
@@ -300,14 +300,18 @@ if size(size(imgB),2)>2 % or selecting ONE colour channel
 end
 patch_size = 32;
 Rthresh = 3000;
-threshold = 0.95;
+threshold = 0.87;
 
 aptA = get_interePt(imgA, patch_size, Rthresh);
 aptB = get_interePt(imgB, patch_size, Rthresh);
 afeaturesA = get_features(imgA, aptA(1,:), aptA(2,:), patch_size);
 afeaturesB = get_features(imgB, aptB(1,:), aptB(2,:), patch_size);
 
-[amatchmy, confidence,dist,r] = knn_match(featuresA, featuresB, threshold);
+[amatchmy, confidence,dist,r] = knn_match(afeaturesA, afeaturesB, threshold);
+[~,L_sort] = sort(confidence, 2);
+
+amatchmy = amatchmy(L_sort',:);
+
 
 aa = aptA(:,amatchmy(:,1))';
 ab = aptB(:,amatchmy(:,2))';
