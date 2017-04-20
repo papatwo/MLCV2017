@@ -1,5 +1,6 @@
 imgA = 'HG1.JPG';
 imgB = 'HG2.JPG';
+C2 = imgB;
 % imgA = 'img1.pgm';
 % imgB = 'img2.pgm';
 imgA = im2double(imread(imgA));
@@ -69,7 +70,7 @@ showMatchedFeatures(imgA, imgB, a, b, 'montage');
 % if size(matchedPoints1,2)<3
 %     H = homography2d([matchedPoints1(1:4,:) ones(4,1)]', [matchedPoints2(1:4,:) ones(4,1)]');
 % end
-n = 4;
+n = 8;
 format long g;
 % 
 % imgA = 'HG1.JPG';
@@ -101,10 +102,86 @@ for i = 1:size(testPoints1,1)
     proj_ptB = [proj_ptB; proj];
 end
 HA = sum(abs(proj_ptB - testPoints2))./size(a,1)
-
+figure;
 showMatchedFeatures(imgB, imgB, b, proj_ptB,'montage');
-%%
-abs(proj_ptB - testPoints2)
+
+
+%% outlier!!!!!!!!!!!!!!!
+% 
+% idx=abs(proj_ptB - testPoints2)<10;
+% ori_inlier=testPoints2(sum(idx,2)>0,:)
+% proj_inlier=proj_ptB(sum(idx,2)>0,:)
+% figure;
+% showMatchedFeatures(imgB, imgB, proj_inlier, ori_inlier,'montage');
+%% Outlier detection
+% Compare histogram of hue of interest point areas in feature space
+% Threshold distance to determine inlier/outlier
+
+colourB = im2double(imread(C2));
+[numR, numC] = size(colourB(:,:,1));
+shift = patch_size/2; % Use patch size to determine area size
+bin = 360; % Hue as 360 degrees
+colourDist = zeros(size(testPoints2,1), 1);
+
+for i = 1 : size(testPoints2,1)
+    left_boundB = testPoints2(i,1)-shift;
+    right_boundB = testPoints2(i,1)+shift;
+    up_boundB = testPoints2(i,2)-shift;
+    low_boundB = testPoints2(i,2)+shift;
+    
+    left_boundProj = proj_ptB(i,1)-shift;
+    right_boundProj = proj_ptB(i,1)+shift;
+    up_boundProj = proj_ptB(i,2)-shift;
+    low_boundProj = proj_ptB(i,2)+shift;
+    
+    % reduce patch size if area exceed image
+    if left_boundB < 1 || up_boundB < 1 || left_boundProj < 1 || up_boundProj < 1
+        reduce = min([left_boundB, up_boundB, left_boundProj, up_boundProj]);
+        left_boundB = left_boundB + reduce;
+        right_boundB = right_boundB - reduce;
+        up_boundB = up_boundB + reduce;
+        low_boundB = low_boundB - reduce;
+
+        left_boundProj = left_boundProj + reduce;
+        right_boundProj = right_boundProj - reduce;
+        up_boundProj = up_boundProj + reduce;
+        low_boundProj = low_boundProj - reduce;
+    end
+    
+    if right_boundB > numC || low_boundB > numR || right_boundProj  > numC || low_boundProj   > numR 
+        reduce = max([right_boundB - numC, low_boundB - numR, right_boundProj - numC, low_boundProj- numR]);
+        left_boundB = left_boundB + reduce;
+        right_boundB = right_boundB - reduce;
+        up_boundB = up_boundB + reduce;
+        low_boundB = low_boundB - reduce;
+
+        left_boundProj = left_boundProj + reduce;
+        right_boundProj = right_boundProj - reduce;
+        up_boundProj = up_boundProj + reduce;
+        low_boundProj = low_boundProj - reduce;
+    end
+    
+    
+    colourPatchB = colourB(up_boundB : low_boundB, left_boundB : right_boundB, :);
+    colourPatchProj = colourB(up_boundProj : low_boundProj, left_boundProj: right_boundProj, :);
+    HSV_B = rgb2hsv(colourPatchB);
+    HSV_proj = rgb2hsv(colourPatchProj);
+    HueB = reshape(HSV_B(:,:,1),1,[]);
+    HueProj = reshape(HSV_proj(:,:,1),1,[]);
+    H_histB = histcounts(HueB * 360 , bin); % Histgram of hue
+    H_histProj = histcounts(HueProj * 360 , bin); % Histgram of hue
+    colourDist(i,1) = pdist2(H_histB, H_histProj);
+end
+
+C_thresh = 5;
+
+outliers = find(colourDist > C_thresh);
+inliers = find(colourDist < C_thresh);
+
+figure;showMatchedFeatures(colourB, colourB, b(inliers,:), proj_ptB(inliers,:),'montage');
+figure;showMatchedFeatures(colourB, colourB, b(outliers,:), proj_ptB(outliers,:),'montage');
+
+
 %%
 % % % MAYBE another way test
 % h11=H(1,1);h12=H(1,2);h13=H(1,3);
